@@ -56,3 +56,7 @@ To check the permission without opening the app UI, run:
 ```zsh
 ./build/Profile\ Switcher.app/Contents/MacOS/ProfileSwitcher --check-accessibility
 ```
+
+## License
+
+This project is available under the [MIT License](LICENSE).
