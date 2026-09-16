@@ -18,4 +18,11 @@ enum ChromeWindowTitleMatcher {
             || title.hasSuffix(" — \(label)")
             || title.hasSuffix(" - \(label)")
     }
+
+    static func matchesProfileMenuItem(title: String, profileName: String, personName: String?) -> Bool {
+        let title = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let label = profileLabel(profileName: profileName, personName: personName)
+        return title.caseInsensitiveCompare(profileName) == .orderedSame
+            || title.caseInsensitiveCompare(label) == .orderedSame
+    }
 }

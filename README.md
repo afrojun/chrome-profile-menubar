@@ -1,6 +1,6 @@
 # Chrome Profile Switcher for the macOS menu bar
 
-This menu-bar app shows one icon for each Chrome profile. Clicking a profile avatar immediately raises an existing window for that profile. If the profile has no open window, it opens the profile normally. It never opens Chrome's **Profiles** menu, copies the current URL, or handles profile data itself.
+This menu-bar app shows one icon for each Chrome profile. Clicking a profile avatar immediately switches to that profile, even when its window is on another desktop Space. If the profile has no open window, Chrome opens it normally. The app never displays Chrome's **Profiles** menu, copies the current URL, or handles profile data itself.
 
 ## Run
 
@@ -8,11 +8,11 @@ This menu-bar app shows one icon for each Chrome profile. Clicking a profile ava
 ./run.sh
 ```
 
-The first switch asks for Accessibility access. Enable **Profile Switcher** in **System Settings → Privacy & Security → Accessibility**, then select the profile again. Accessibility access lets the app find and raise the matching Chrome window without showing Chrome's Profiles menu.
+The first switch asks for Accessibility access. Enable **Profile Switcher** in **System Settings → Privacy & Security → Accessibility**, then select the profile again. Accessibility access lets the app invoke Chrome's profile command without showing the Profiles menu.
 
 The build uses the local `Profile Switcher Local Signing` identity when it is available. Otherwise, it uses an ad-hoc signature, which may cause macOS to ask for Accessibility permission after each rebuild.
 
-Each profile appears as a circular, center-cropped version of its saved Google avatar in the macOS menu bar. If Chrome has no image for a profile, the app shows a colored circular initial. Hover to see the profile name; click once to switch or open it as appropriate. The ellipsis icon contains only Refresh, Accessibility Settings, and Quit.
+Each profile appears as a circular, center-cropped version of its saved Google avatar in the macOS menu bar. If Chrome has no image for a profile, the app shows a colored circular initial. Hover to see the profile name; click once to switch or open it as appropriate. The ellipsis icon contains Refresh, Launch at Login, Accessibility Settings, and Quit.
 
 If Chrome or the target profile is not open, the app launches that profile without passing a page URL. Chrome decides whether to restore or create its normal profile window.
 
@@ -36,7 +36,7 @@ To distribute compiled builds outside the Mac App Store, use an Apple [**Develop
 
 ## Limitations
 
-- Existing-window switching depends on the profile label Chrome adds to its window title.
+- Profile switching depends on Chrome's English **Profiles** menu. The app falls back to matching Chrome's window-title label if that command is unavailable.
 - The app does not—and cannot—turn the current window into another profile.
 - If profiles are added or renamed, select **Refresh Profiles**.
 

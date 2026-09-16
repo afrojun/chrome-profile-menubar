@@ -73,6 +73,11 @@ enum ChromeProfileActivator {
         }
 
         let application = AXUIElementCreateApplication(chrome.processIdentifier)
+        if pressProfileMenuItem(for: profile, in: application) {
+            chrome.activate()
+            return
+        }
+
         if let window = windows(of: application).first(where: {
             ChromeWindowTitleMatcher.matches(
                 windowTitle: stringAttribute($0, kAXTitleAttribute),
@@ -84,6 +89,25 @@ enum ChromeProfileActivator {
         } else {
             try launch(profile)
         }
+    }
+
+    private static func pressProfileMenuItem(for profile: ChromeProfile, in application: AXUIElement) -> Bool {
+        guard
+            let menuBar = elementAttribute(application, kAXMenuBarAttribute),
+            let profilesMenu = elements(of: menuBar).first(where: {
+                stringAttribute($0, kAXTitleAttribute).caseInsensitiveCompare("Profiles") == .orderedSame
+            }),
+            let menu = elements(of: profilesMenu).first,
+            let profileItem = elements(of: menu).first(where: {
+                ChromeWindowTitleMatcher.matchesProfileMenuItem(
+                    title: stringAttribute($0, kAXTitleAttribute),
+                    profileName: profile.name,
+                    personName: profile.personName
+                )
+            })
+        else { return false }
+
+        return AXUIElementPerformAction(profileItem, kAXPressAction as CFString) == .success
     }
 
     private static func launch(_ profile: ChromeProfile) throws {
@@ -114,8 +138,18 @@ enum ChromeProfileActivator {
     }
 
     private static func windows(of application: AXUIElement) -> [AXUIElement] {
+        elements(of: application, attribute: kAXWindowsAttribute)
+    }
+
+    private static func elements(of element: AXUIElement, attribute: String = kAXChildrenAttribute) -> [AXUIElement] {
         var value: CFTypeRef?
-        guard AXUIElementCopyAttributeValue(application, kAXWindowsAttribute as CFString, &value) == .success else { return [] }
+        guard AXUIElementCopyAttributeValue(element, attribute as CFString, &value) == .success else { return [] }
         return value as? [AXUIElement] ?? []
+    }
+
+    private static func elementAttribute(_ element: AXUIElement, _ attribute: String) -> AXUIElement? {
+        var value: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(element, attribute as CFString, &value) == .success else { return nil }
+        return value as! AXUIElement?
     }
 }

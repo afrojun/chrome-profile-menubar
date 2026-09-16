@@ -43,6 +43,30 @@ struct ChromeWindowTitleMatcherTests {
             "page content without Chrome's title separator must not match"
         )
         expect(
+            ChromeWindowTitleMatcher.matchesProfileMenuItem(
+                title: "Taylor (Work)",
+                profileName: "Work",
+                personName: "Taylor"
+            ),
+            "a qualified profile menu item should match"
+        )
+        expect(
+            ChromeWindowTitleMatcher.matchesProfileMenuItem(
+                title: "Personal",
+                profileName: "Personal",
+                personName: "Personal"
+            ),
+            "a plain profile menu item should match"
+        )
+        expect(
+            !ChromeWindowTitleMatcher.matchesProfileMenuItem(
+                title: "Taylor",
+                profileName: "Work",
+                personName: "Taylor"
+            ),
+            "a shared person name must not identify a profile"
+        )
+        expect(
             (try? ChromeProfile(directory: "Default", name: "Personal", personName: nil)) != nil,
             "a normal directory should be valid"
         )
