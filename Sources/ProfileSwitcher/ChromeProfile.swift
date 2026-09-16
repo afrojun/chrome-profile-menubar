@@ -1,14 +1,14 @@
 import AppKit
 import ApplicationServices
 
-struct ChromeProfile {
+struct ChromeProfile: Equatable {
     let directory: String
     let name: String
     let personName: String?
 
     init(directory: String, name: String, personName: String?) throws {
         guard Self.isValidDirectory(directory) else {
-            throw ProfileSwitcherError("The Chrome profile directory is invalid.")
+            throw ProfileSwitcherError.message("The Chrome profile directory is invalid.")
         }
         self.directory = directory
         self.name = name
@@ -25,9 +25,18 @@ struct ChromeProfile {
     }
 }
 
-struct ProfileSwitcherError: LocalizedError {
-    let errorDescription: String?
-    init(_ message: String) { errorDescription = message }
+enum ProfileSwitcherError: LocalizedError {
+    case accessibilityAccessRequired
+    case message(String)
+
+    var errorDescription: String? {
+        switch self {
+        case .accessibilityAccessRequired:
+            "Accessibility access is needed to switch to an open Chrome profile."
+        case let .message(message):
+            message
+        }
+    }
 }
 
 enum ChromeProfileStore {
@@ -40,7 +49,7 @@ enum ChromeProfileStore {
             let profile = root["profile"] as? [String: Any],
             let cache = profile["info_cache"] as? [String: [String: Any]]
         else {
-            throw ProfileSwitcherError("Chrome's profile list could not be read.")
+            throw ProfileSwitcherError.message("Chrome's profile list could not be read.")
         }
 
         return try cache.map { directory, details in
@@ -67,9 +76,8 @@ enum ChromeProfileActivator {
             return
         }
 
-        let trustedOptions = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
-        guard AXIsProcessTrustedWithOptions(trustedOptions) else {
-            throw ProfileSwitcherError("Allow Profile Switcher in System Settings → Privacy & Security → Accessibility, then try again.")
+        guard AXIsProcessTrusted() else {
+            throw ProfileSwitcherError.accessibilityAccessRequired
         }
 
         let application = AXUIElementCreateApplication(chrome.processIdentifier)
@@ -117,7 +125,7 @@ enum ChromeProfileActivator {
         do {
             try process.run()
         } catch {
-            throw ProfileSwitcherError("Chrome could not open the “\(profile.name)” profile: \(error.localizedDescription)")
+            throw ProfileSwitcherError.message("Chrome could not open the “\(profile.name)” profile: \(error.localizedDescription)")
         }
     }
 
@@ -126,7 +134,7 @@ enum ChromeProfileActivator {
         AXUIElementSetAttributeValue(application, kAXFocusedWindowAttribute as CFString, window)
         let result = AXUIElementPerformAction(window, kAXRaiseAction as CFString)
         guard result == .success else {
-            throw ProfileSwitcherError("Chrome's window could not be raised (Accessibility error \(result.rawValue)).")
+            throw ProfileSwitcherError.message("Chrome's window could not be raised (Accessibility error \(result.rawValue)).")
         }
         chrome.activate()
     }

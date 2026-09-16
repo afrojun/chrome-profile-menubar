@@ -12,8 +12,8 @@ Profile Switcher is a native macOS menu-bar app. One action must switch to an op
 - Keep window-title lookup and safe profile launch as fallbacks.
 - Match profile menu labels exactly by profile name or by Chrome's qualified `Person (Profile)` form. A person name alone is ambiguous.
 - Store profile preferences by Chrome's stable profile directory, not by display name or list position.
-- Profile-avatar status items are optional. Keep the ellipsis item so settings and Quit are always available.
-- Reuse the Keyboard Shortcuts window. Repeated menu actions must not open copies.
+- Each profile avatar is optional. Keep the settings item so Settings and Quit are always available.
+- Reuse the Settings window. Repeated menu actions must not open copies.
 - Shortcut recording must require at least one modifier. Escape cancels recording; Delete clears the assignment.
 - Register only assigned hotkeys. Do not install a global keyboard monitor or save typed input.
 
@@ -23,7 +23,8 @@ Profile Switcher is a native macOS menu-bar app. One action must switch to an op
 - `ChromeWindowTitleMatcher.swift` owns Chrome label matching and should remain independently testable.
 - `ProfileShortcut.swift` owns persisted shortcut values and profile-icon visibility.
 - `GlobalHotKeyRegistrar.swift` owns Carbon hotkey registration and dispatch only.
-- `ShortcutSettingsWindowController.swift` owns the native shortcut settings UI and local recording state.
+- `ShortcutRecorderButton.swift` owns shortcut capture and recording feedback.
+- `SettingsWindowController.swift` owns the native settings window and rows.
 - `ProfileAvatarRenderer.swift` owns avatar and monogram rendering.
 - `main.swift` coordinates the app. Keep policy here and mechanics in the focused types above.
 
@@ -65,9 +66,9 @@ Before finishing non-trivial code, read the diff as a new reviewer. The main flo
 
 - Use native AppKit controls, system colors, SF typography, and standard macOS shortcut symbols.
 - Use Chrome profile avatars as the visual cue; keep the rest of the UI quiet and compact.
-- Use plain, action-oriented labels such as `Keyboard Shortcuts…`, `Show Profile Icons`, and `Launch at Login`.
+- Use plain, action-oriented labels such as `Settings…`, `Menu bar`, and `Start at login`.
 - Show actionable errors. A shortcut conflict should leave the previous assignment intact.
-- Preserve the user's shortcuts and icon setting during UI tests. Restore any state the test changes.
+- Preserve the user's shortcuts and per-profile icon settings during UI tests. Restore any state the test changes.
 
 ## Build and test
 
@@ -94,6 +95,8 @@ Before handing back a change:
 7. Confirm the installed app and repository build came from the same source revision.
 
 The scripts create throwaway test binaries. In a restricted environment, point `CLANG_MODULE_CACHE_PATH` and `SWIFT_MODULECACHE_PATH` to a writable temporary directory instead of changing the scripts.
+
+The sandbox may hide login Keychain identities. If `build.sh` warns that it is signing ad hoc, do not install that build over a certificate-signed copy. Build with Keychain access, then verify the installed signature and Accessibility trust.
 
 ## Regression coverage
 

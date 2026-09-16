@@ -56,18 +56,11 @@ struct ProfileHotKey: Codable, Equatable {
 final class ProfileShortcutPreferences {
     private let defaults: UserDefaults
     private let shortcutsKey = "profileShortcuts"
-    private let showProfileIconsKey = "showProfileIcons"
+    private let visibilityKey = "profileVisibility"
+    private let oldVisibilityKey = "showProfileIcons"
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-    }
-
-    var showProfileIcons: Bool {
-        get {
-            guard defaults.object(forKey: showProfileIconsKey) != nil else { return true }
-            return defaults.bool(forKey: showProfileIconsKey)
-        }
-        set { defaults.set(newValue, forKey: showProfileIconsKey) }
     }
 
     var shortcuts: [String: ProfileHotKey] {
@@ -85,5 +78,28 @@ final class ProfileShortcutPreferences {
         var shortcuts = shortcuts
         shortcuts[profileDirectory] = shortcut
         self.shortcuts = shortcuts
+    }
+
+    func isProfileVisible(_ profileDirectory: String) -> Bool {
+        if let value = visibility[profileDirectory] { return value }
+        guard defaults.object(forKey: oldVisibilityKey) != nil else { return true }
+        return defaults.bool(forKey: oldVisibilityKey)
+    }
+
+    func setProfileVisible(_ isVisible: Bool, for profileDirectory: String) {
+        var visibility = visibility
+        visibility[profileDirectory] = isVisible
+        self.visibility = visibility
+    }
+
+    private var visibility: [String: Bool] {
+        get {
+            guard let data = defaults.data(forKey: visibilityKey) else { return [:] }
+            return (try? JSONDecoder().decode([String: Bool].self, from: data)) ?? [:]
+        }
+        set {
+            let data = try? JSONEncoder().encode(newValue)
+            defaults.set(data, forKey: visibilityKey)
+        }
     }
 }

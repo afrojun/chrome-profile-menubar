@@ -98,10 +98,13 @@ struct ChromeWindowTitleMatcherTests {
         let defaults = UserDefaults(suiteName: suiteName)!
         defer { defaults.removePersistentDomain(forName: suiteName) }
         let preferences = ProfileShortcutPreferences(defaults: defaults)
-        expect(preferences.showProfileIcons, "profile icons should be visible by default")
-        preferences.showProfileIcons = false
+        expect(preferences.isProfileVisible("Default"), "profile icons should be visible by default")
+        defaults.set(false, forKey: "showProfileIcons")
+        expect(!preferences.isProfileVisible("Default"), "the old visibility setting should remain the default")
+        preferences.setProfileVisible(true, for: "Profile 1")
         preferences.setShortcut(hotKey, for: "Profile 1")
-        expect(!preferences.showProfileIcons, "profile icon visibility should persist")
+        expect(preferences.isProfileVisible("Profile 1"), "profile visibility should persist by directory")
+        expect(!preferences.isProfileVisible("Profile 2"), "an unset profile should keep the old default")
         expect(preferences.shortcuts["Profile 1"] == hotKey, "shortcuts should persist by profile directory")
         preferences.setShortcut(nil, for: "Profile 1")
         expect(preferences.shortcuts["Profile 1"] == nil, "clearing a shortcut should remove it")

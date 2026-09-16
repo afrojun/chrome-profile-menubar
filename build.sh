@@ -14,6 +14,10 @@ else
   signing_identity="-"
 fi
 
+if [[ "$signing_identity" == "-" ]]; then
+  print -u2 "Warning: signing ad hoc; installing this build may reset Accessibility access."
+fi
+
 mkdir -p "$contents_dir/MacOS" "$contents_dir/Resources"
 swiftc -O -warnings-as-errors -framework AppKit -framework ApplicationServices -framework Carbon -framework ServiceManagement \
   "$project_dir/Sources/ProfileSwitcher/ChromeProfile.swift" \
@@ -21,7 +25,8 @@ swiftc -O -warnings-as-errors -framework AppKit -framework ApplicationServices -
   "$project_dir/Sources/ProfileSwitcher/ChromeWindowTitleMatcher.swift" \
   "$project_dir/Sources/ProfileSwitcher/ProfileAvatarRenderer.swift" \
   "$project_dir/Sources/ProfileSwitcher/ProfileShortcut.swift" \
-  "$project_dir/Sources/ProfileSwitcher/ShortcutSettingsWindowController.swift" \
+  "$project_dir/Sources/ProfileSwitcher/ShortcutRecorderButton.swift" \
+  "$project_dir/Sources/ProfileSwitcher/SettingsWindowController.swift" \
   "$project_dir/Sources/ProfileSwitcher/main.swift" \
   -o "$contents_dir/MacOS/ProfileSwitcher"
 cp "$project_dir/Info.plist" "$contents_dir/Info.plist"

@@ -8,21 +8,21 @@ This menu-bar app switches directly to any Chrome profile by clicking its avatar
 ./run.sh
 ```
 
-The first switch asks for Accessibility access. Enable **Profile Switcher** in **System Settings → Privacy & Security → Accessibility**, then select the profile again. Accessibility access lets the app invoke Chrome's profile command without showing the Profiles menu.
+The first switch explains why Accessibility access is needed and offers to open **System Settings → Privacy & Security → Accessibility**. Grant access, then select the profile again. Accessibility access lets the app invoke Chrome's profile command without showing the Profiles menu.
 
 The build uses the local `Profile Switcher Local Signing` identity when it is available. Otherwise, it uses an ad-hoc signature, which may cause macOS to ask for Accessibility permission after each rebuild.
 
 Each profile appears as a circular, center-cropped version of its saved Google avatar in the macOS menu bar. If Chrome has no image for a profile, the app shows a colored circular initial. Hover to see the profile name; click once to switch or open it as appropriate.
 
-Use **Keyboard Shortcuts…** in the ellipsis menu to assign or clear a global shortcut for each profile. Shortcuts are stored against Chrome's stable profile directory and call the same switch-or-open behavior as the avatars. Outside the visible shortcut recorder, Profile Switcher registers only the combinations you assign and does not monitor keyboard input.
+Open **Settings…** from the gear menu to assign or clear a global shortcut for each profile. Shortcuts are stored against Chrome's stable profile directory and call the same switch-or-open behavior as the avatars. Outside the visible shortcut recorder, Profile Switcher registers only the combinations you assign and does not monitor keyboard input.
 
-Turn off **Show Profile Icons** for a keyboard-first setup. The ellipsis icon remains available for shortcut settings, profile refresh, launch-at-login, Accessibility settings, and quitting.
+Each profile has its own **Menu bar** switch, so a keyboard-first setup can hide any or all profile avatars. The gear remains available for Settings, profile refresh, and quitting.
 
 If Chrome or the target profile is not open, the app launches that profile without passing a page URL. Chrome decides whether to restore or create its normal profile window.
 
 ## Install permanently
 
-Build the app, then drag `build/Profile Switcher.app` to `/Applications`. Use **Launch at Login** in the app's ellipsis menu to control whether it starts when you sign in. A checkmark means startup is enabled; a dash means macOS is waiting for approval in **System Settings → General → Login Items**.
+Build the app, then drag `build/Profile Switcher.app` to `/Applications`. Use **Start at login** in Settings to control whether it starts when you sign in. If macOS needs approval, the setting links to **System Settings → General → Login Items** and shows that state in plain text.
 
 ## Keep Accessibility permission across builds
 
@@ -42,7 +42,7 @@ To distribute compiled builds outside the Mac App Store, use an Apple [**Develop
 
 - Profile switching depends on Chrome's English **Profiles** menu. The app falls back to matching Chrome's window-title label if that command is unavailable.
 - The app does not—and cannot—turn the current window into another profile.
-- If profiles are added or renamed, select **Refresh Profiles**.
+- Profiles refresh whenever Settings or the gear menu opens. **Refresh Profiles** remains available for a manual retry.
 
 ## Verify
 
