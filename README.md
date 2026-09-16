@@ -10,7 +10,7 @@ This menu-bar app shows one icon for each Chrome profile. Clicking a profile ava
 
 The first switch asks for Accessibility access. Enable **Profile Switcher** in **System Settings → Privacy & Security → Accessibility**, then select the profile again. Accessibility access lets the app find and raise the matching Chrome window without showing Chrome's Profiles menu.
 
-By default, the build uses an ad-hoc signature. macOS may treat each rebuild as a new app and ask you to enable Accessibility again. Use a local signing certificate to give rebuilds a stable, cryptographic identity.
+The build uses the local `Profile Switcher Local Signing` identity when it is available. Otherwise, it uses an ad-hoc signature, which may cause macOS to ask for Accessibility permission after each rebuild.
 
 Each profile appears as a circular, center-cropped version of its saved Google avatar in the macOS menu bar. If Chrome has no image for a profile, the app shows a colored circular initial. Hover to see the profile name; click once to switch or open it as appropriate. The ellipsis icon contains only Refresh, Accessibility Settings, and Quit.
 
@@ -22,22 +22,15 @@ Build the app, then drag `build/Profile Switcher.app` to `/Applications`. Add it
 
 ## Keep Accessibility permission across builds
 
-For local use, [create a self-signed certificate](https://support.apple.com/guide/keychain-access/kyca8916/mac) in **Keychain Access → Certificate Assistant → Create a Certificate**:
+Run the one-time setup:
 
-1. Name it `Profile Switcher Local Signing`.
-2. Choose **Self Signed Root** as the identity type.
-3. Choose **Code Signing** as the certificate type.
-4. Keep the certificate and its private key in your login keychain. Never add or export the private key to this repository.
-
-Pass that identity to the build:
-
-```zsh
-PROFILE_SWITCHER_SIGNING_IDENTITY="Profile Switcher Local Signing" ./run.sh
+```sh
+./setup-signing.sh
 ```
 
-The build script deliberately has no shared signing identity. Each developer supplies an identity from their own keychain. Without the environment variable, it falls back to ad-hoc signing.
+The script creates a self-signed Code Signing identity in your login keychain. The private key stays in Keychain and temporary files are removed. Each developer creates their own identity; never export or commit the private key. Subsequent builds find the identity automatically. To use another identity, set `PROFILE_SWITCHER_SIGNING_IDENTITY` when building.
 
-If you ran an older build that used the identifier-only signing requirement, remove its existing Accessibility entry before enabling the newly signed app. This clears the grant tied to the weaker identity.
+The setup changes the app's signing identity, so macOS may ask for Accessibility permission one final time. A self-signed identity is only for local builds. It does not satisfy Gatekeeper or notarization and must not be used to distribute compiled builds.
 
 To distribute compiled builds outside the Mac App Store, use an Apple [**Developer ID Application** certificate](https://developer.apple.com/help/account/certificates/create-developer-id-certificates) and notarize the app. Set `PROFILE_SWITCHER_SIGNING_IDENTITY` to the full certificate name shown by `security find-identity -v -p codesigning`.
 
