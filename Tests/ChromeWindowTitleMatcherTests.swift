@@ -1,4 +1,5 @@
-import Foundation
+import AppKit
+import Carbon
 
 func expect(_ condition: @autoclosure () -> Bool, _ message: String) {
     guard condition() else {
@@ -76,6 +77,34 @@ struct ChromeWindowTitleMatcherTests {
                 "an unsafe directory must be rejected"
             )
         }
+
+        let hotKey = ProfileHotKey(
+            keyCode: 18,
+            modifiers: UInt32(controlKey | optionKey),
+            keyLabel: "1"
+        )
+        expect(hotKey.displayName == "⌃⌥1", "a shortcut should use standard macOS modifier symbols")
+        let shiftedNumber = ProfileHotKey(
+            keyCode: 25,
+            modifiers: UInt32(controlKey | optionKey | shiftKey),
+            keyLabel: "9"
+        )
+        expect(
+            shiftedNumber.displayName == "⌃⌥⇧9",
+            "a shifted shortcut should show the physical key"
+        )
+
+        let suiteName = "ProfileSwitcherTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let preferences = ProfileShortcutPreferences(defaults: defaults)
+        expect(preferences.showProfileIcons, "profile icons should be visible by default")
+        preferences.showProfileIcons = false
+        preferences.setShortcut(hotKey, for: "Profile 1")
+        expect(!preferences.showProfileIcons, "profile icon visibility should persist")
+        expect(preferences.shortcuts["Profile 1"] == hotKey, "shortcuts should persist by profile directory")
+        preferences.setShortcut(nil, for: "Profile 1")
+        expect(preferences.shortcuts["Profile 1"] == nil, "clearing a shortcut should remove it")
         print("PASS: Profile switcher tests")
     }
 }

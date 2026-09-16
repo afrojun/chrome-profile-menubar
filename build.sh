@@ -15,10 +15,13 @@ else
 fi
 
 mkdir -p "$contents_dir/MacOS" "$contents_dir/Resources"
-swiftc -O -warnings-as-errors -framework AppKit -framework ApplicationServices -framework ServiceManagement \
+swiftc -O -warnings-as-errors -framework AppKit -framework ApplicationServices -framework Carbon -framework ServiceManagement \
   "$project_dir/Sources/ProfileSwitcher/ChromeProfile.swift" \
+  "$project_dir/Sources/ProfileSwitcher/GlobalHotKeyRegistrar.swift" \
   "$project_dir/Sources/ProfileSwitcher/ChromeWindowTitleMatcher.swift" \
   "$project_dir/Sources/ProfileSwitcher/ProfileAvatarRenderer.swift" \
+  "$project_dir/Sources/ProfileSwitcher/ProfileShortcut.swift" \
+  "$project_dir/Sources/ProfileSwitcher/ShortcutSettingsWindowController.swift" \
   "$project_dir/Sources/ProfileSwitcher/main.swift" \
   -o "$contents_dir/MacOS/ProfileSwitcher"
 cp "$project_dir/Info.plist" "$contents_dir/Info.plist"

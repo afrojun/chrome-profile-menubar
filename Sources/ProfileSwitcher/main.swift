@@ -7,6 +7,11 @@ final class ProfileSwitcherAppDelegate: NSObject, NSApplicationDelegate, NSMenuD
     private var profileItems: [NSStatusItem] = []
     private var utilityItem: NSStatusItem!
     private var profiles: [ChromeProfile] = []
+    private let preferences = ProfileShortcutPreferences()
+    private lazy var hotKeyRegistrar = GlobalHotKeyRegistrar { [weak self] profile in
+        self?.activate(profile)
+    }
+    private var shortcutSettings: ShortcutSettingsWindowController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -22,10 +27,14 @@ final class ProfileSwitcherAppDelegate: NSObject, NSApplicationDelegate, NSMenuD
         do {
             profiles = try ChromeProfileStore.load()
             // AppKit inserts each new status item to the left of the previous one.
-            profileItems = profiles.reversed().map(makeStatusItem)
+            if preferences.showProfileIcons {
+                profileItems = profiles.reversed().map(makeStatusItem)
+            }
+            _ = hotKeyRegistrar.register(profiles: profiles, shortcuts: preferences.shortcuts)
             utilityItem.menu = makeUtilityMenu()
         } catch {
             profiles = []
+            _ = hotKeyRegistrar.register(profiles: [], shortcuts: [:])
             utilityItem.menu = makeUtilityMenu(error: error.localizedDescription)
         }
     }
@@ -55,6 +64,13 @@ final class ProfileSwitcherAppDelegate: NSObject, NSApplicationDelegate, NSMenuD
         let refresh = NSMenuItem(title: "Refresh Profiles", action: #selector(refreshProfiles), keyEquivalent: "r")
         refresh.target = self
         menu.addItem(refresh)
+        let shortcuts = NSMenuItem(title: "Keyboard Shortcuts…", action: #selector(openShortcutSettings), keyEquivalent: "")
+        shortcuts.target = self
+        menu.addItem(shortcuts)
+        let profileIcons = NSMenuItem(title: "Show Profile Icons", action: #selector(toggleProfileIcons(_:)), keyEquivalent: "")
+        profileIcons.target = self
+        profileIcons.state = preferences.showProfileIcons ? .on : .off
+        menu.addItem(profileIcons)
         let settings = NSMenuItem(title: "Accessibility Settings…", action: #selector(openAccessibilitySettings), keyEquivalent: "")
         settings.target = self
         menu.addItem(settings)
@@ -78,14 +94,32 @@ final class ProfileSwitcherAppDelegate: NSObject, NSApplicationDelegate, NSMenuD
             let profile = profiles.first(where: { $0.directory == directory })
         else { return }
 
-        do {
-            try ChromeProfileActivator.activate(profile)
-        } catch {
-            show(error: error.localizedDescription)
-        }
+        activate(profile)
     }
 
     @objc private func refreshProfiles() { refreshProfileIcons() }
+
+    @objc private func openShortcutSettings() {
+        if let shortcutSettings, shortcutSettings.window?.isVisible == true {
+            shortcutSettings.present()
+            return
+        }
+
+        let controller = ShortcutSettingsWindowController(
+            profiles: profiles,
+            shortcuts: preferences.shortcuts,
+            setShortcut: { [weak self] profile, shortcut in
+                self?.setShortcut(shortcut, for: profile) ?? false
+            }
+        )
+        shortcutSettings = controller
+        controller.present()
+    }
+
+    @objc private func toggleProfileIcons(_ sender: NSMenuItem) {
+        preferences.showProfileIcons.toggle()
+        refreshProfileIcons()
+    }
 
     @objc private func openAccessibilitySettings() {
         let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
@@ -114,6 +148,26 @@ final class ProfileSwitcherAppDelegate: NSObject, NSApplicationDelegate, NSMenuD
         case .enabled: .on
         case .requiresApproval: .mixed
         default: .off
+        }
+    }
+
+    private func setShortcut(_ shortcut: ProfileHotKey?, for profile: ChromeProfile) -> Bool {
+        let previous = preferences.shortcuts[profile.directory]
+        preferences.setShortcut(shortcut, for: profile.directory)
+        let failures = hotKeyRegistrar.register(profiles: profiles, shortcuts: preferences.shortcuts)
+        guard !failures.contains(profile.directory) else {
+            preferences.setShortcut(previous, for: profile.directory)
+            _ = hotKeyRegistrar.register(profiles: profiles, shortcuts: preferences.shortcuts)
+            return false
+        }
+        return true
+    }
+
+    private func activate(_ profile: ChromeProfile) {
+        do {
+            try ChromeProfileActivator.activate(profile)
+        } catch {
+            show(error: error.localizedDescription)
         }
     }
 

@@ -1,6 +1,6 @@
 # Chrome Profile Switcher for the macOS menu bar
 
-This menu-bar app shows one icon for each Chrome profile. Clicking a profile avatar immediately switches to that profile, even when its window is on another desktop Space. If the profile has no open window, Chrome opens it normally. The app never displays Chrome's **Profiles** menu, copies the current URL, or handles profile data itself.
+This menu-bar app switches directly to any Chrome profile by clicking its avatar or pressing a global shortcut. Switching works even when the profile's window is on another desktop Space. If the profile has no open window, Chrome opens it normally. The app never displays Chrome's **Profiles** menu, copies the current URL, or handles profile data itself.
 
 ## Run
 
@@ -12,7 +12,11 @@ The first switch asks for Accessibility access. Enable **Profile Switcher** in *
 
 The build uses the local `Profile Switcher Local Signing` identity when it is available. Otherwise, it uses an ad-hoc signature, which may cause macOS to ask for Accessibility permission after each rebuild.
 
-Each profile appears as a circular, center-cropped version of its saved Google avatar in the macOS menu bar. If Chrome has no image for a profile, the app shows a colored circular initial. Hover to see the profile name; click once to switch or open it as appropriate. The ellipsis icon contains Refresh, Launch at Login, Accessibility Settings, and Quit.
+Each profile appears as a circular, center-cropped version of its saved Google avatar in the macOS menu bar. If Chrome has no image for a profile, the app shows a colored circular initial. Hover to see the profile name; click once to switch or open it as appropriate.
+
+Use **Keyboard Shortcuts…** in the ellipsis menu to assign or clear a global shortcut for each profile. Shortcuts are stored against Chrome's stable profile directory and call the same switch-or-open behavior as the avatars. Outside the visible shortcut recorder, Profile Switcher registers only the combinations you assign and does not monitor keyboard input.
+
+Turn off **Show Profile Icons** for a keyboard-first setup. The ellipsis icon remains available for shortcut settings, profile refresh, launch-at-login, Accessibility settings, and quitting.
 
 If Chrome or the target profile is not open, the app launches that profile without passing a page URL. Chrome decides whether to restore or create its normal profile window.
 
@@ -42,7 +46,7 @@ To distribute compiled builds outside the Mac App Store, use an Apple [**Develop
 
 ## Verify
 
-Run `./test.sh` to exercise Chrome's window-title formats and reject unsafe profile-directory values.
+Run `./test.sh` to exercise Chrome's profile labels, shortcut preferences, and unsafe profile-directory rejection.
 
 To check the permission without opening the app UI, run:
 
