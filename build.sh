@@ -15,7 +15,7 @@ else
 fi
 
 mkdir -p "$contents_dir/MacOS" "$contents_dir/Resources"
-swiftc -O -warnings-as-errors -framework AppKit -framework ApplicationServices \
+swiftc -O -warnings-as-errors -framework AppKit -framework ApplicationServices -framework ServiceManagement \
   "$project_dir/Sources/ProfileSwitcher/ChromeProfile.swift" \
   "$project_dir/Sources/ProfileSwitcher/ChromeWindowTitleMatcher.swift" \
   "$project_dir/Sources/ProfileSwitcher/ProfileAvatarRenderer.swift" \

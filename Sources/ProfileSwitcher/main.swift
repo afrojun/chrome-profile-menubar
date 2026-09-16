@@ -1,8 +1,9 @@
 import AppKit
 import ApplicationServices
+import ServiceManagement
 
 @MainActor
-final class ProfileSwitcherAppDelegate: NSObject, NSApplicationDelegate {
+final class ProfileSwitcherAppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var profileItems: [NSStatusItem] = []
     private var utilityItem: NSStatusItem!
     private var profiles: [ChromeProfile] = []
@@ -44,6 +45,7 @@ final class ProfileSwitcherAppDelegate: NSObject, NSApplicationDelegate {
 
     private func makeUtilityMenu(error: String? = nil) -> NSMenu {
         let menu = NSMenu()
+        menu.delegate = self
         if let error {
             let item = NSMenuItem(title: error, action: nil, keyEquivalent: "")
             item.isEnabled = false
@@ -56,10 +58,18 @@ final class ProfileSwitcherAppDelegate: NSObject, NSApplicationDelegate {
         let settings = NSMenuItem(title: "Accessibility Settings…", action: #selector(openAccessibilitySettings), keyEquivalent: "")
         settings.target = self
         menu.addItem(settings)
+        let launchAtLogin = NSMenuItem(title: "Launch at Login", action: #selector(toggleLaunchAtLogin(_:)), keyEquivalent: "")
+        launchAtLogin.target = self
+        launchAtLogin.state = launchAtLoginState
+        menu.addItem(launchAtLogin)
         menu.addItem(.separator())
         let quit = NSMenuItem(title: "Quit Profile Switcher", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         menu.addItem(quit)
         return menu
+    }
+
+    func menuWillOpen(_ menu: NSMenu) {
+        menu.items.first { $0.action == #selector(toggleLaunchAtLogin(_:)) }?.state = launchAtLoginState
     }
 
     @objc private func selectProfile(_ sender: NSStatusBarButton) {
@@ -80,6 +90,31 @@ final class ProfileSwitcherAppDelegate: NSObject, NSApplicationDelegate {
     @objc private func openAccessibilitySettings() {
         let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
         NSWorkspace.shared.open(url)
+    }
+
+    @objc private func toggleLaunchAtLogin(_ sender: NSMenuItem) {
+        let service = SMAppService.mainApp
+        do {
+            if service.status == .enabled || service.status == .requiresApproval {
+                try service.unregister()
+            } else {
+                try service.register()
+                if service.status == .requiresApproval {
+                    SMAppService.openSystemSettingsLoginItems()
+                }
+            }
+            sender.state = launchAtLoginState
+        } catch {
+            show(error: "Launch at Login could not be changed: \(error.localizedDescription)")
+        }
+    }
+
+    private var launchAtLoginState: NSControl.StateValue {
+        switch SMAppService.mainApp.status {
+        case .enabled: .on
+        case .requiresApproval: .mixed
+        default: .off
+        }
     }
 
     private func show(error: String) {

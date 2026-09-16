@@ -18,7 +18,7 @@ If Chrome or the target profile is not open, the app launches that profile witho
 
 ## Install permanently
 
-Build the app, then drag `build/Profile Switcher.app` to `/Applications`. Add it under **System Settings → General → Login Items** if you want it to start when you sign in.
+Build the app, then drag `build/Profile Switcher.app` to `/Applications`. Use **Launch at Login** in the app's ellipsis menu to control whether it starts when you sign in. A checkmark means startup is enabled; a dash means macOS is waiting for approval in **System Settings → General → Login Items**.
 
 ## Keep Accessibility permission across builds
 
