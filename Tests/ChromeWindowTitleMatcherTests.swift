@@ -108,6 +108,11 @@ struct ChromeWindowTitleMatcherTests {
         expect(preferences.shortcuts["Profile 1"] == hotKey, "shortcuts should persist by profile directory")
         preferences.setShortcut(nil, for: "Profile 1")
         expect(preferences.shortcuts["Profile 1"] == nil, "clearing a shortcut should remove it")
+
+        let symbol = ProfileBarSymbol.image()
+        expect(symbol.size == NSSize(width: 18, height: 18), "menu-bar symbol should use the native status-item size")
+        expect(symbol.isTemplate, "menu-bar symbol should adapt to the menu-bar appearance")
+        expect(symbol.tiffRepresentation != nil, "menu-bar symbol should render")
         print("PASS: ProfileBar tests")
     }
 }

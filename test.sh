@@ -7,6 +7,7 @@ swiftc -warnings-as-errors \
   -framework AppKit -framework ApplicationServices -framework Carbon \
   "$project_dir/Sources/ProfileBar/ChromeProfile.swift" \
   "$project_dir/Sources/ProfileBar/ChromeWindowTitleMatcher.swift" \
+  "$project_dir/Sources/ProfileBar/ProfileBarSymbol.swift" \
   "$project_dir/Sources/ProfileBar/ProfileShortcut.swift" \
   "$project_dir/Tests/ChromeWindowTitleMatcherTests.swift" \
   -o "$test_binary"

@@ -14,9 +14,9 @@ The build uses the local `ProfileBar Local Signing` identity when it is availabl
 
 Each profile appears as a circular, center-cropped version of its saved Google avatar in the macOS menu bar. If Chrome has no image for a profile, the app shows a colored circular initial. Hover to see the profile name; click once to switch or open it as appropriate.
 
-Open **Settings…** from the gear menu to assign or clear a global shortcut for each profile. Shortcuts are stored against Chrome's stable profile directory and call the same switch-or-open behavior as the avatars. Outside the visible shortcut recorder, ProfileBar registers only the combinations you assign and does not monitor keyboard input.
+Open **Settings…** from the ProfileBar menu to assign or clear a global shortcut for each profile. Shortcuts are stored against Chrome's stable profile directory and call the same switch-or-open behavior as the avatars. Outside the visible shortcut recorder, ProfileBar registers only the combinations you assign and does not monitor keyboard input.
 
-Each profile has its own **Menu bar** switch, so a keyboard-first setup can hide any or all profile avatars. The gear remains available for Settings, profile refresh, and quitting.
+Each profile has its own **Menu bar** switch, so a keyboard-first setup can hide any or all profile avatars. The ProfileBar icon remains available for Settings, profile refresh, and quitting.
 
 If Chrome or the target profile is not open, the app launches that profile without passing a page URL. Chrome decides whether to restore or create its normal profile window.
 
@@ -42,7 +42,7 @@ To distribute compiled builds outside the Mac App Store, use an Apple [**Develop
 
 - Profile switching depends on Chrome's English **Profiles** menu. The app falls back to matching Chrome's window-title label if that command is unavailable.
 - The app does not—and cannot—turn the current window into another profile.
-- Profiles refresh whenever Settings or the gear menu opens. **Refresh Profiles** remains available for a manual retry.
+- Profiles refresh whenever Settings or the ProfileBar menu opens. **Refresh Profiles** remains available for a manual retry.
 
 ## Verify
 
