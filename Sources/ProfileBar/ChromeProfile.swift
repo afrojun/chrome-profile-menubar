@@ -44,6 +44,10 @@ enum ChromeProfileStore {
         let localStateURL = FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent("Library/Application Support/Google/Chrome/Local State")
         let data = try Data(contentsOf: localStateURL)
+        return try parse(data)
+    }
+
+    static func parse(_ data: Data) throws -> [ChromeProfile] {
         guard
             let root = try JSONSerialization.jsonObject(with: data) as? [String: Any],
             let profile = root["profile"] as? [String: Any],
