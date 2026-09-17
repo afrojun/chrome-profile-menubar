@@ -55,6 +55,8 @@ security find-identity -v -p codesigning
 
 Pushing a version tag runs [the release workflow](../.github/workflows/release.yml) on an Apple silicon macOS runner. It tests, signs, builds a drag-to-Applications DMG, notarizes, staples, verifies, and publishes the DMG with its SHA-256 checksum.
 
+The reasons for using direct GitHub distribution are recorded in the [distribution decision](distribution-decision.md).
+
 The tag must match `CFBundleShortVersionString` in `Info.plist`. Version `0.3.1`, for example, uses tag `v0.3.1`.
 
 ### Set up GitHub secrets
@@ -82,6 +84,15 @@ The first command uploads the encoded certificate. The other commands prompt for
 ### Create the release
 
 From a committed `main` branch:
+
+1. Install the Developer ID-signed build in Applications.
+2. Confirm an avatar click focuses a profile in the current Space and another Space.
+3. Confirm selecting a closed profile opens it without copying the current URL.
+4. Confirm each assigned shortcut performs the same switch-or-open action.
+5. Confirm Settings reuses one window and **Start at login** reports its state correctly.
+6. Run the automated checks with `./test.sh` and `./build.sh`.
+
+Then create and push the version tag:
 
 ```zsh
 git tag -a v0.3.1 -m "ProfileBar 0.3.1"
