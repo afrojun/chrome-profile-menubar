@@ -1,98 +1,63 @@
-# ProfileBar
+<p align="center">
+  <img src="Resources/ProfileBarIcon.png" width="128" alt="ProfileBar app icon">
+</p>
 
-One-click Chrome profiles for macOS. ProfileBar switches directly to any profile when you click its menu-bar avatar or press a global shortcut. Switching works even when the profile's window is on another desktop Space. If the profile has no open window, Chrome opens it normally. ProfileBar never displays Chrome's **Profiles** menu, copies the current URL, or handles profile data itself.
+<h1 align="center">ProfileBar</h1>
 
-## Run
+<p align="center">Jump straight to the Chrome profile you want.</p>
 
-```zsh
-./run.sh
-```
+<p align="center">
+  <img src="docs/images/menu-bar.png" width="304" alt="Three Chrome profile buttons and the ProfileBar button in the macOS menu bar">
+</p>
 
-The first switch explains why Accessibility access is needed and offers to open **System Settings → Privacy & Security → Accessibility**. Grant access, then select the profile again. Accessibility access lets ProfileBar invoke Chrome's profile command without showing the Profiles menu.
+ProfileBar puts your Chrome profiles in the macOS menu bar. Click a profile avatar or press its keyboard shortcut to switch in one step, without opening Chrome's **Profiles** menu.
 
-The build uses an installed `Developer ID Application` certificate when available, then falls back to the local `ProfileBar Local Signing` identity. Without either identity, it uses an ad-hoc signature, which may cause macOS to ask for Accessibility permission after each rebuild.
+If that profile already has a window open, ProfileBar brings it forward, even from another desktop Space. If it does not, ProfileBar opens the profile normally.
 
-Each profile appears as a circular, center-cropped version of its saved Google avatar in the macOS menu bar. If Chrome has no image for a profile, the app shows a colored circular initial. Hover to see the profile name; click once to switch or open it as appropriate.
+## Use it
 
-Open **Settings…** from the ProfileBar menu to assign or clear a global shortcut for each profile. Shortcuts are stored against Chrome's stable profile directory and call the same switch-or-open behavior as the avatars. Outside the visible shortcut recorder, ProfileBar registers only the combinations you assign and does not monitor keyboard input.
+Each avatar in the menu bar belongs to one Chrome profile. Click the one you want and ProfileBar will switch to it or open it as needed.
 
-Each profile has its own **Menu bar** switch, so a keyboard-first setup can hide any or all profile avatars. The ProfileBar icon remains available for Settings, profile refresh, and quitting.
+Open **Settings…** from the ProfileBar button to:
 
-If Chrome or the target profile is not open, the app launches that profile without passing a page URL. Chrome decides whether to restore or create its normal profile window.
+- Set a global keyboard shortcut for each profile.
+- Choose which profile avatars stay in the menu bar.
+- Start ProfileBar automatically when you sign in.
 
-## Install permanently
+<p align="center">
+  <img src="docs/images/settings.png" width="720" alt="ProfileBar settings with Personal, Work, and Side project profiles">
+</p>
 
-Build the app, then drag `build/ProfileBar.app` to `/Applications`. Use **Start at login** in Settings to control whether it starts when you sign in. If macOS needs approval, the setting links to **System Settings → General → Login Items** and shows that state in plain text.
+Profile shortcuts work from any app. ProfileBar only registers the combinations you assign; it does not monitor what you type.
 
-## Keep Accessibility permission across builds
+## Install
 
-Run the one-time setup:
+1. Download the latest `.dmg` from [GitHub Releases](https://github.com/afrojun/profilebar/releases).
+2. Open it and drag **ProfileBar** to **Applications**.
+3. Launch ProfileBar from Applications.
 
-```sh
-./setup-signing.sh
-```
+The first time you switch to an open profile, macOS asks you to allow ProfileBar in **System Settings → Privacy & Security → Accessibility**. Grant access, then select the profile again.
 
-The script creates a self-signed Code Signing identity in your login keychain. The private key stays in Keychain and temporary files are removed. Each developer creates their own identity; never export or commit the private key. Subsequent builds find the identity automatically. To use another identity, set `PROFILEBAR_SIGNING_IDENTITY` when building.
+Current releases are built for Apple silicon Macs.
 
-The setup changes the app's signing identity, so macOS may ask for Accessibility permission one final time. A self-signed identity is only for local builds. It does not satisfy Gatekeeper or notarization and must not be used to distribute compiled builds.
+## Why Accessibility access?
 
-To distribute compiled builds outside the Mac App Store, use an Apple [**Developer ID Application** certificate](https://developer.apple.com/help/account/certificates/create-developer-id-certificates) and notarize the app. The build enables hardened runtime and a secure timestamp when it finds that certificate. If the keychain contains more than one, set `PROFILEBAR_SIGNING_IDENTITY` to the full certificate name shown by `security find-identity -v -p codesigning`.
+Chrome does not provide a public API for bringing a specific profile window to the front. ProfileBar uses macOS Accessibility to choose Chrome's profile command without showing the menu, or to raise the matching window when needed.
 
-## Publish a release
-
-Pushing a version tag runs `.github/workflows/release.yml` on an Apple silicon macOS runner. The workflow tests, signs, builds a drag-to-Applications DMG, notarizes, staples, verifies, and publishes it with its SHA-256 checksum. The tag must match `CFBundleShortVersionString` in `Info.plist`; version `0.3.1` uses tag `v0.3.1`.
-
-The release waits for Apple to finish notarization before it publishes anything. The job allows three hours, with up to 150 minutes for Apple, so a slow submission does not produce an unsigned or incomplete release. Standard GitHub-hosted runners are free for this public repository.
-
-Set up the release secrets once:
-
-1. Open **Keychain Access**, select the **login** keychain, then select **My Certificates**.
-2. Find and expand **Developer ID Application**. It must show a private key beneath it.
-3. Right-click the certificate, choose **Export**, select **Personal Information Exchange (`.p12`)**, and protect it with a new export password. Save it outside this repository.
-4. From this repository, run:
-
-```zsh
-base64 -i /path/to/developer-id.p12 | gh secret set BUILD_CERTIFICATE_BASE64
-gh secret set P12_PASSWORD
-gh secret set APPLE_ID
-gh secret set APPLE_TEAM_ID
-gh secret set APPLE_APP_SPECIFIC_PASSWORD
-```
-
-The first command uploads the encrypted certificate. The remaining commands prompt without putting their values in shell history:
-
-- `P12_PASSWORD`: the export password chosen in Keychain Access.
-- `APPLE_ID`: the email address used for the Apple Developer account.
-- `APPLE_TEAM_ID`: the Team Identifier shown by `codesign -d --verbose=4 /Applications/ProfileBar.app 2>&1 | sed -n 's/^TeamIdentifier=//p'`.
-- `APPLE_APP_SPECIFIC_PASSWORD`: the dedicated ProfileBar password generated at [account.apple.com](https://account.apple.com/) under **Sign-In and Security → App-Specific Passwords**.
-
-When the secrets are ready, publish a release from a committed `main` branch:
-
-```zsh
-git tag -a v0.3.1 -m "ProfileBar 0.3.1"
-git push origin v0.3.1
-```
-
-GitHub Actions does not expose repository secrets to workflows from forks. The release workflow runs only for tags pushed to this repository and grants its built-in token only permission to publish repository contents. The current release contains an Apple silicon (`arm64`) app. Users open the DMG and drag ProfileBar onto the Applications shortcut.
+ProfileBar reads Chrome's local profile list and saved avatars. It does not read page contents, copy URLs, send profile data anywhere, or bypass macOS permission controls.
 
 ## Limitations
 
-- Profile switching depends on Chrome's English **Profiles** menu. The app falls back to matching Chrome's window-title label if that command is unavailable.
-- The app does not—and cannot—turn the current window into another profile.
-- Profiles refresh whenever Settings or the ProfileBar menu opens. **Refresh Profiles** remains available for a manual retry.
+- Profile switching currently expects Chrome's **Profiles** menu to be in English.
+- ProfileBar cannot turn the current Chrome window into a different profile.
+- If Chrome changes its menu or window labels, ProfileBar may need an update.
 
-## Verify
+## Development
 
-Run `./test.sh` to exercise Chrome's profile labels, shortcut preferences, and unsafe profile-directory rejection.
-
-To check the permission without opening the app UI, run:
-
-```zsh
-./build/ProfileBar.app/Contents/MacOS/ProfileBar --check-accessibility
-```
+Want to build ProfileBar, run the tests, or publish a release? See [Development and releases](docs/development.md).
 
 ## License
 
-This project is available under the [MIT License](LICENSE).
+ProfileBar is available under the [MIT License](LICENSE).
 
 Created by [Arjun Radhakrishnan](https://afrojun.dev/).
