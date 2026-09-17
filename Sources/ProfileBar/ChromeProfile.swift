@@ -8,7 +8,7 @@ struct ChromeProfile: Equatable {
 
     init(directory: String, name: String, personName: String?) throws {
         guard Self.isValidDirectory(directory) else {
-            throw ProfileSwitcherError.message("The Chrome profile directory is invalid.")
+            throw ProfileBarError.message("The Chrome profile directory is invalid.")
         }
         self.directory = directory
         self.name = name
@@ -25,7 +25,7 @@ struct ChromeProfile: Equatable {
     }
 }
 
-enum ProfileSwitcherError: LocalizedError {
+enum ProfileBarError: LocalizedError {
     case accessibilityAccessRequired
     case message(String)
 
@@ -49,7 +49,7 @@ enum ChromeProfileStore {
             let profile = root["profile"] as? [String: Any],
             let cache = profile["info_cache"] as? [String: [String: Any]]
         else {
-            throw ProfileSwitcherError.message("Chrome's profile list could not be read.")
+            throw ProfileBarError.message("Chrome's profile list could not be read.")
         }
 
         return try cache.map { directory, details in
@@ -77,7 +77,7 @@ enum ChromeProfileActivator {
         }
 
         guard AXIsProcessTrusted() else {
-            throw ProfileSwitcherError.accessibilityAccessRequired
+            throw ProfileBarError.accessibilityAccessRequired
         }
 
         let application = AXUIElementCreateApplication(chrome.processIdentifier)
@@ -125,7 +125,7 @@ enum ChromeProfileActivator {
         do {
             try process.run()
         } catch {
-            throw ProfileSwitcherError.message("Chrome could not open the “\(profile.name)” profile: \(error.localizedDescription)")
+            throw ProfileBarError.message("Chrome could not open the “\(profile.name)” profile: \(error.localizedDescription)")
         }
     }
 
@@ -134,7 +134,7 @@ enum ChromeProfileActivator {
         AXUIElementSetAttributeValue(application, kAXFocusedWindowAttribute as CFString, window)
         let result = AXUIElementPerformAction(window, kAXRaiseAction as CFString)
         guard result == .success else {
-            throw ProfileSwitcherError.message("Chrome's window could not be raised (Accessibility error \(result.rawValue)).")
+            throw ProfileBarError.message("Chrome's window could not be raised (Accessibility error \(result.rawValue)).")
         }
         chrome.activate()
     }

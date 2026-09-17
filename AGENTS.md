@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Profile Switcher is a native macOS menu-bar app. One action must switch to an open Chrome profile, even across desktop Spaces, or open it when no window exists.
+ProfileBar is a native macOS menu-bar app. One action must switch to an open Chrome profile, even across desktop Spaces, or open it when no window exists.
 
 ## Product invariants
 

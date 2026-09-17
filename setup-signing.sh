@@ -1,7 +1,7 @@
 #!/bin/zsh
 set -euo pipefail
 
-identity_name="Profile Switcher Local Signing"
+identity_name="ProfileBar Local Signing"
 login_keychain="$(security default-keychain -d user | tr -d '"[:space:]')"
 valid_identities="$(security find-identity -v -p codesigning "$login_keychain" 2>/dev/null || true)"
 
@@ -16,7 +16,7 @@ if security find-certificate -c "$identity_name" "$login_keychain" >/dev/null 2>
     exit 1
 fi
 
-temporary_dir="$(mktemp -d /private/tmp/profile-switcher-signing.XXXXXX)"
+temporary_dir="$(mktemp -d /private/tmp/profilebar-signing.XXXXXX)"
 cleanup() {
     rm -rf -- "$temporary_dir"
 }
@@ -27,6 +27,7 @@ certificate="$temporary_dir/certificate.pem"
 private_key="$temporary_dir/private-key.pem"
 identity="$temporary_dir/identity.p12"
 serial_number="0x$(/usr/bin/openssl rand -hex 16)"
+identity_password="$(/usr/bin/openssl rand -hex 24)"
 
 /usr/bin/openssl req -x509 -newkey rsa:3072 -sha256 -nodes -days 3650 \
     -subj "/CN=$identity_name" \
@@ -41,11 +42,11 @@ serial_number="0x$(/usr/bin/openssl rand -hex 16)"
     -inkey "$private_key" \
     -in "$certificate" \
     -out "$identity" \
-    -passout pass:
+    -passout "pass:$identity_password"
 
 security import "$identity" \
     -k "$login_keychain" \
-    -P "" \
+    -P "$identity_password" \
     -T /usr/bin/codesign >/dev/null
 
 security add-trusted-cert \

@@ -3,7 +3,7 @@ import ApplicationServices
 import ServiceManagement
 
 @MainActor
-final class ProfileSwitcherAppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
+final class ProfileBarAppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var profileItems: [NSStatusItem] = []
     private var utilityItem: NSStatusItem!
     private var profiles: [ChromeProfile] = []
@@ -17,7 +17,7 @@ final class ProfileSwitcherAppDelegate: NSObject, NSApplicationDelegate, NSMenuD
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
         utilityItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        utilityItem.button?.image = NSImage(systemSymbolName: "gearshape", accessibilityDescription: "Profile Switcher settings")
+        utilityItem.button?.image = NSImage(systemSymbolName: "gearshape", accessibilityDescription: "ProfileBar settings")
 
         let menu = NSMenu()
         menu.delegate = self
@@ -110,7 +110,7 @@ final class ProfileSwitcherAppDelegate: NSObject, NSApplicationDelegate, NSMenuD
         menu.addItem(refresh)
 
         menu.addItem(.separator())
-        let quit = NSMenuItem(title: "Quit Profile Switcher", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        let quit = NSMenuItem(title: "Quit ProfileBar", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         menu.addItem(quit)
     }
 
@@ -222,7 +222,7 @@ final class ProfileSwitcherAppDelegate: NSObject, NSApplicationDelegate, NSMenuD
     private func activate(_ profile: ChromeProfile) {
         do {
             try ChromeProfileActivator.activate(profile)
-        } catch ProfileSwitcherError.accessibilityAccessRequired {
+        } catch ProfileBarError.accessibilityAccessRequired {
             showAccessibilityHelp()
         } catch {
             show(error: error.localizedDescription)
@@ -233,9 +233,9 @@ final class ProfileSwitcherAppDelegate: NSObject, NSApplicationDelegate, NSMenuD
         NSApp.activate()
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.icon = NSImage(systemSymbolName: "person.2.circle.fill", accessibilityDescription: "Profile Switcher")
+        alert.icon = NSImage(systemSymbolName: "person.2.circle.fill", accessibilityDescription: "ProfileBar")
         alert.messageText = "Accessibility access needed"
-        alert.informativeText = "Allow Profile Switcher to control Chrome, then try the profile again."
+        alert.informativeText = "Allow ProfileBar to control Chrome, then try the profile again."
         alert.addButton(withTitle: "Open System Settings")
         alert.addButton(withTitle: "Not Now")
         if alert.runModal() == .alertFirstButtonReturn {
@@ -254,8 +254,8 @@ final class ProfileSwitcherAppDelegate: NSObject, NSApplicationDelegate, NSMenuD
         NSApp.activate()
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.icon = NSImage(systemSymbolName: "person.2.circle.fill", accessibilityDescription: "Profile Switcher")
-        alert.messageText = "Profile Switcher"
+        alert.icon = NSImage(systemSymbolName: "person.2.circle.fill", accessibilityDescription: "ProfileBar")
+        alert.messageText = "ProfileBar"
         alert.informativeText = error
         alert.runModal()
     }
@@ -263,17 +263,17 @@ final class ProfileSwitcherAppDelegate: NSObject, NSApplicationDelegate, NSMenuD
 
 if CommandLine.arguments.contains("--check-accessibility") {
     if AXIsProcessTrusted() {
-        print("PASS: Profile Switcher is trusted for Accessibility")
+        print("PASS: ProfileBar is trusted for Accessibility")
         exit(0)
     } else {
-        FileHandle.standardError.write(Data("FAIL: Profile Switcher is not trusted for Accessibility\n".utf8))
+        FileHandle.standardError.write(Data("FAIL: ProfileBar is not trusted for Accessibility\n".utf8))
         exit(1)
     }
 }
 
 MainActor.assumeIsolated {
     let application = NSApplication.shared
-    let delegate = ProfileSwitcherAppDelegate()
+    let delegate = ProfileBarAppDelegate()
     application.delegate = delegate
     application.run()
 }

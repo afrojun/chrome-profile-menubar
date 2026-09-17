@@ -94,7 +94,7 @@ struct ChromeWindowTitleMatcherTests {
             "a shifted shortcut should show the physical key"
         )
 
-        let suiteName = "ProfileSwitcherTests.\(UUID().uuidString)"
+        let suiteName = "ProfileBarTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
         defer { defaults.removePersistentDomain(forName: suiteName) }
         let preferences = ProfileShortcutPreferences(defaults: defaults)
@@ -108,6 +108,6 @@ struct ChromeWindowTitleMatcherTests {
         expect(preferences.shortcuts["Profile 1"] == hotKey, "shortcuts should persist by profile directory")
         preferences.setShortcut(nil, for: "Profile 1")
         expect(preferences.shortcuts["Profile 1"] == nil, "clearing a shortcut should remove it")
-        print("PASS: Profile switcher tests")
+        print("PASS: ProfileBar tests")
     }
 }

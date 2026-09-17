@@ -10,7 +10,7 @@ enum LaunchAtLoginStatus {
     var detail: String {
         switch self {
         case .off, .on:
-            "Open Profile Switcher when you sign in."
+            "Open ProfileBar when you sign in."
         case .needsApproval:
             "Needs approval in System Settings → General → Login Items."
         }
@@ -51,7 +51,7 @@ final class SettingsWindowController: NSWindowController {
             backing: .buffered,
             defer: false
         )
-        window.title = "Profile Switcher"
+        window.title = "ProfileBar"
         window.isReleasedWhenClosed = false
         window.minSize = NSSize(width: 500, height: 320)
         super.init(window: window)
@@ -135,7 +135,7 @@ final class SettingsWindowController: NSWindowController {
         toggle.state = status.isOn ? .on : .off
         toggle.target = self
         toggle.action = #selector(changeLaunchAtLogin(_:))
-        toggle.setAccessibilityLabel("Start Profile Switcher at login")
+        toggle.setAccessibilityLabel("Start ProfileBar at login")
 
         let detail = Self.detail(status.detail)
         launchDetail = detail
