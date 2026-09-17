@@ -38,7 +38,7 @@ Profile shortcuts work from any app. ProfileBar only registers the combinations 
 
 The first time you switch to an open profile, macOS asks you to allow ProfileBar in **System Settings → Privacy & Security → Accessibility**. Grant access, then select the profile again.
 
-Current releases are built for Apple silicon Macs.
+Current releases require macOS 14 or later and an Apple silicon Mac.
 
 ## Why Accessibility access?
 

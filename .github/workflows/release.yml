@@ -63,9 +63,13 @@ jobs:
           ./build.sh
           codesign --verify --deep --strict --verbose=2 build/ProfileBar.app
           details="$(codesign -d --verbose=4 build/ProfileBar.app 2>&1)"
+          minimum_macos_version="$(/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' Info.plist)"
+          build_info="$(vtool -show-build build/ProfileBar.app/Contents/MacOS/ProfileBar)"
           [[ "$details" == *"Authority=Developer ID Application:"* ]]
           [[ "$details" == *"runtime"* ]]
           [[ "$details" == *"Timestamp="* ]]
+          [[ "$build_info" == *"minos $minimum_macos_version"* ]]
+          file build/ProfileBar.app/Contents/MacOS/ProfileBar | grep -F "arm64"
 
       - name: Create DMG
         shell: zsh {0}

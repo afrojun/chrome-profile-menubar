@@ -1,6 +1,6 @@
 # Development and releases
 
-ProfileBar is a small native AppKit app with no third-party dependencies. You need macOS, Google Chrome, and the Xcode command-line tools to build it.
+ProfileBar is a small native AppKit app with no third-party dependencies. You need macOS 14 or later, Google Chrome, and the Xcode command-line tools to build it.
 
 ## Run locally
 
