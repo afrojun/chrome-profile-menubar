@@ -1,0 +1,65 @@
+name: Bug report
+description: Tell us when ProfileBar does not work as expected.
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve ProfileBar. Remove account details, profile names, and unrelated browser content from screenshots and logs.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe what ProfileBar did and what you expected instead.
+    validations:
+      required: true
+  - type: dropdown
+    id: profile-state
+    attributes:
+      label: Profile state
+      options:
+        - Already open in the current Space
+        - Already open in another Space
+        - Closed
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open…
+        2. Select…
+        3. See…
+    validations:
+      required: true
+  - type: input
+    id: profilebar-version
+    attributes:
+      label: ProfileBar version
+      description: Find this at the bottom of Settings or in About.
+      placeholder: 1.0.0
+    validations:
+      required: true
+  - type: input
+    id: macos-version
+    attributes:
+      label: macOS version
+      placeholder: 15.6
+    validations:
+      required: true
+  - type: input
+    id: chrome-version
+    attributes:
+      label: Chrome version
+      placeholder: 140.0.7339.214
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add sanitized screenshots or details that may help.

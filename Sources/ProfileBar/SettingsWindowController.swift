@@ -40,6 +40,9 @@ struct SettingsActions {
 
 @MainActor
 final class SettingsWindowController: NSWindowController {
+    private static let repositoryURL = URL(string: "https://github.com/afrojun/profilebar")!
+    private static let helpURL = repositoryURL.appending(path: "issues/new/choose")
+
     private let actions: SettingsActions
     private var launchDetail: NSTextField?
 
@@ -72,7 +75,7 @@ final class SettingsWindowController: NSWindowController {
     func refresh() {
         let snapshot = actions.snapshot()
         window?.contentView = makeContentView(snapshot)
-        let height = max(320, 190 + 50 * snapshot.profiles.count)
+        let height = max(360, 230 + 50 * snapshot.profiles.count)
         window?.setContentSize(NSSize(width: 540, height: height))
     }
 
@@ -121,6 +124,15 @@ final class SettingsWindowController: NSWindowController {
         let access = makeAccessibilityRow(snapshot.hasAccessibilityAccess)
         stack.addArrangedSubview(access)
         access.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
+
+        let footerSeparator = NSBox()
+        footerSeparator.boxType = .separator
+        stack.addArrangedSubview(footerSeparator)
+        footerSeparator.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
+
+        let footer = makeFooter()
+        stack.addArrangedSubview(footer)
+        footer.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
 
         NSLayoutConstraint.activate([
             stack.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: 24),
@@ -176,6 +188,40 @@ final class SettingsWindowController: NSWindowController {
         refresh()
     }
 
+    private func makeFooter() -> NSView {
+        let version = NSTextField(labelWithString: "ProfileBar \(Self.version)")
+        version.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
+        version.textColor = .secondaryLabelColor
+        version.isSelectable = true
+
+        let spacer = NSView()
+        spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
+
+        let about = linkButton("About", action: #selector(showAbout))
+        let help = linkButton("Help & Feedback", action: #selector(openHelp))
+        let source = linkButton("View on GitHub", action: #selector(openRepository))
+
+        let footer = NSStackView(views: [version, spacer, about, help, source])
+        footer.orientation = .horizontal
+        footer.alignment = .centerY
+        footer.spacing = 12
+        return footer
+    }
+
+    @objc private func showAbout() {
+        let credits = NSMutableAttributedString(string: "View on GitHub")
+        credits.addAttribute(.link, value: Self.repositoryURL, range: NSRange(location: 0, length: credits.length))
+        NSApp.orderFrontStandardAboutPanel(options: [.credits: credits])
+    }
+
+    @objc private func openHelp() {
+        NSWorkspace.shared.open(Self.helpURL)
+    }
+
+    @objc private func openRepository() {
+        NSWorkspace.shared.open(Self.repositoryURL)
+    }
+
     private static func heading(_ title: String) -> NSTextField {
         let label = NSTextField(labelWithString: title)
         label.font = .systemFont(ofSize: NSFont.systemFontSize, weight: .semibold)
@@ -187,6 +233,18 @@ final class SettingsWindowController: NSWindowController {
         label.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
         label.textColor = .secondaryLabelColor
         return label
+    }
+
+    private func linkButton(_ title: String, action: Selector) -> NSButton {
+        let button = NSButton(title: title, target: self, action: action)
+        button.isBordered = false
+        button.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
+        button.contentTintColor = .linkColor
+        return button
+    }
+
+    private static var version: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "Unknown"
     }
 
     private static func settingRow(title: String, detail: NSTextField, controls: [NSView]) -> NSView {

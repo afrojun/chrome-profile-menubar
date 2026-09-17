@@ -52,6 +52,12 @@ ProfileBar reads Chrome's local profile list and saved avatars. It does not read
 - ProfileBar cannot turn the current Chrome window into a different profile.
 - If Chrome changes its menu or window labels, ProfileBar may need an update.
 
+## Help and feedback
+
+Open **Settings…** and choose **Help & Feedback** to report a bug or suggest an improvement. You can also [open an issue directly](https://github.com/afrojun/profilebar/issues/new/choose).
+
+Please report security concerns privately using the instructions in the [security policy](SECURITY.md), not in a public issue.
+
 ## Development
 
 Want to build ProfileBar, run the tests, or publish a release? See [Development and releases](docs/development.md).
