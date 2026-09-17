@@ -47,7 +47,9 @@ enum ProfileAvatarRenderer {
 
     private static func monogram(for profile: ChromeProfile) -> NSImage {
         NSImage(size: NSSize(width: 128, height: 128), flipped: false) { bounds in
-            let palette: [NSColor] = [.systemBlue, .systemPurple, .systemGreen, .systemOrange, .systemPink, .systemTeal]
+            let palette: [NSColor] = [
+                .systemBlue, .systemPurple, .systemGreen, .systemOrange, .systemPink, .systemTeal,
+            ]
             let colorIndex = profile.directory.utf8.reduce(0) { ($0 * 31 + Int($1)) % palette.count }
             palette[colorIndex].setFill()
             bounds.fill()

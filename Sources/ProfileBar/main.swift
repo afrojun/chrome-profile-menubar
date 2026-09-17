@@ -64,7 +64,9 @@ final class ProfileBarAppDelegate: NSObject, NSApplicationDelegate, NSMenuDelega
     }
 
     private func rebuildProfileItems() {
-        profileItems.forEach { NSStatusBar.system.removeStatusItem($0) }
+        for item in profileItems {
+            NSStatusBar.system.removeStatusItem(item)
+        }
         let visibleProfiles = profiles.filter { preferences.isProfileVisible($0.directory) }
         // AppKit adds each new item to the left of the last one.
         profileItems = visibleProfiles.reversed().map(makeStatusItem)
@@ -96,7 +98,8 @@ final class ProfileBarAppDelegate: NSObject, NSApplicationDelegate, NSMenuDelega
             menu.addItem(error)
             menu.addItem(.separator())
         } else if !AXIsProcessTrusted() {
-            let access = NSMenuItem(title: "Accessibility Access Needed…", action: #selector(openAccessibilitySettings), keyEquivalent: "")
+            let access = NSMenuItem(
+                title: "Accessibility Access Needed…", action: #selector(openAccessibilitySettings), keyEquivalent: "")
             access.target = self
             menu.addItem(access)
             menu.addItem(.separator())
@@ -111,7 +114,8 @@ final class ProfileBarAppDelegate: NSObject, NSApplicationDelegate, NSMenuDelega
         menu.addItem(refresh)
 
         menu.addItem(.separator())
-        let quit = NSMenuItem(title: "Quit ProfileBar", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        let quit = NSMenuItem(
+            title: "Quit ProfileBar", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         menu.addItem(quit)
     }
 
@@ -173,9 +177,11 @@ final class ProfileBarAppDelegate: NSObject, NSApplicationDelegate, NSMenuDelega
     }
 
     private func setShortcut(_ shortcut: ProfileHotKey?, for profile: ChromeProfile) -> String? {
-        if let shortcut, preferences.shortcuts.contains(where: { directory, assigned in
-            directory != profile.directory && assigned == shortcut
-        }) {
+        if let shortcut,
+            preferences.shortcuts.contains(where: { directory, assigned in
+                directory != profile.directory && assigned == shortcut
+            })
+        {
             return "Already assigned to another profile."
         }
 

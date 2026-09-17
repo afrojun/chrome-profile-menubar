@@ -33,7 +33,7 @@ enum ProfileBarError: LocalizedError {
         switch self {
         case .accessibilityAccessRequired:
             "Accessibility access is needed to switch to an open Chrome profile."
-        case let .message(message):
+        case .message(let message):
             message
         }
     }
@@ -53,7 +53,8 @@ enum ChromeProfileStore {
         }
 
         return try cache.map { directory, details in
-            let name = nonEmpty(details["name"] as? String)
+            let name =
+                nonEmpty(details["name"] as? String)
                 ?? nonEmpty(details["shortcut_name"] as? String)
                 ?? directory
             return try ChromeProfile(
@@ -71,7 +72,8 @@ enum ChromeProfileStore {
 
 enum ChromeProfileActivator {
     static func activate(_ profile: ChromeProfile) throws {
-        guard let chrome = NSRunningApplication.runningApplications(withBundleIdentifier: "com.google.Chrome").first else {
+        guard let chrome = NSRunningApplication.runningApplications(withBundleIdentifier: "com.google.Chrome").first
+        else {
             try launch(profile)
             return
         }
@@ -125,7 +127,8 @@ enum ChromeProfileActivator {
         do {
             try process.run()
         } catch {
-            throw ProfileBarError.message("Chrome could not open the “\(profile.name)” profile: \(error.localizedDescription)")
+            throw ProfileBarError.message(
+                "Chrome could not open the “\(profile.name)” profile: \(error.localizedDescription)")
         }
     }
 
@@ -134,7 +137,8 @@ enum ChromeProfileActivator {
         AXUIElementSetAttributeValue(application, kAXFocusedWindowAttribute as CFString, window)
         let result = AXUIElementPerformAction(window, kAXRaiseAction as CFString)
         guard result == .success else {
-            throw ProfileBarError.message("Chrome's window could not be raised (Accessibility error \(result.rawValue)).")
+            throw ProfileBarError.message(
+                "Chrome's window could not be raised (Accessibility error \(result.rawValue)).")
         }
         chrome.activate()
     }

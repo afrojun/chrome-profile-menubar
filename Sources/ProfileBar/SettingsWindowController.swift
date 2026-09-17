@@ -85,7 +85,8 @@ final class SettingsWindowController: NSWindowController {
         stack.translatesAutoresizingMaskIntoConstraints = false
         content.addSubview(stack)
 
-        let intro = NSTextField(wrappingLabelWithString: "Choose which profiles appear in the menu bar and set a shortcut for each one.")
+        let intro = NSTextField(
+            wrappingLabelWithString: "Choose which profiles appear in the menu bar and set a shortcut for each one.")
         intro.textColor = .secondaryLabelColor
         stack.addArrangedSubview(intro)
         intro.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
@@ -143,7 +144,9 @@ final class SettingsWindowController: NSWindowController {
     }
 
     private func makeAccessibilityRow(_ hasAccess: Bool) -> NSView {
-        let open = NSButton(title: hasAccess ? "Open Settings…" : "Grant Access…", target: self, action: #selector(openAccessibilitySettings))
+        let open = NSButton(
+            title: hasAccess ? "Open Settings…" : "Grant Access…", target: self,
+            action: #selector(openAccessibilitySettings))
         open.bezelStyle = .rounded
 
         let check = NSButton(title: "Check Again", target: self, action: #selector(checkAccessibility))

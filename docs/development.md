@@ -19,6 +19,12 @@ The first switch explains why Accessibility access is needed and links to **Syst
 
 The app is written to `build/ProfileBar.app`. The build uses an installed `Developer ID Application` certificate when available, then falls back to the local `ProfileBar Local Signing` identity. Without either identity, it uses an ad-hoc signature, which may cause macOS to ask for Accessibility permission after each rebuild.
 
+Format the Swift sources with the same rules enforced by the test script:
+
+```zsh
+xcrun swift-format format --in-place --configuration .swift-format --recursive Sources Tests
+```
+
 To inspect the permission without opening the app UI:
 
 ```zsh

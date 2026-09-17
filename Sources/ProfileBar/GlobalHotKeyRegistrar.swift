@@ -2,7 +2,7 @@ import Carbon
 
 @MainActor
 final class GlobalHotKeyRegistrar {
-    private static let signature: OSType = 0x5053_5743 // PSWC
+    private static let signature: OSType = 0x5053_5743  // PSWC
 
     private var eventHandler: EventHandlerRef?
     private var hotKeyRefs: [EventHotKeyRef] = []
@@ -30,7 +30,9 @@ final class GlobalHotKeyRegistrar {
     }
 
     deinit {
-        hotKeyRefs.forEach { UnregisterEventHotKey($0) }
+        for hotKeyRef in hotKeyRefs {
+            UnregisterEventHotKey(hotKeyRef)
+        }
         if let eventHandler { RemoveEventHandler(eventHandler) }
     }
 
@@ -63,7 +65,9 @@ final class GlobalHotKeyRegistrar {
     }
 
     private func unregisterAll() {
-        hotKeyRefs.forEach { UnregisterEventHotKey($0) }
+        for hotKeyRef in hotKeyRefs {
+            UnregisterEventHotKey(hotKeyRef)
+        }
         hotKeyRefs.removeAll()
         profilesByHotKeyID.removeAll()
     }
