@@ -1,0 +1,149 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: macos-26
+    timeout-minutes: 180
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Check release version
+        shell: zsh {0}
+        run: |
+          set -euo pipefail
+          version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Info.plist)"
+          if [[ "$GITHUB_REF_NAME" != "v$version" ]]; then
+            print -u2 "Tag $GITHUB_REF_NAME does not match Info.plist version $version."
+            exit 1
+          fi
+          print "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Install signing certificate
+        shell: zsh {0}
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+        run: |
+          set -euo pipefail
+          certificate="$RUNNER_TEMP/developer-id.p12"
+          keychain="$RUNNER_TEMP/profilebar.keychain-db"
+          keychain_password="$(uuidgen)"
+
+          print -rn -- "$BUILD_CERTIFICATE_BASE64" | /usr/bin/base64 -D -o "$certificate"
+          security create-keychain -p "$keychain_password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$keychain_password" "$keychain"
+          security import "$certificate" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$keychain"
+          security set-key-partition-list -S apple-tool:,apple: -k "$keychain_password" "$keychain"
+          security list-keychains -d user -s "$keychain"
+          identities="$(security find-identity -v -p codesigning "$keychain")"
+          [[ "$identities" == *'"Developer ID Application:'* ]]
+
+      - name: Test
+        run: ./test.sh
+
+      - name: Build
+        shell: zsh {0}
+        run: |
+          set -euo pipefail
+          ./build.sh
+          codesign --verify --deep --strict --verbose=2 build/ProfileBar.app
+          details="$(codesign -d --verbose=4 build/ProfileBar.app 2>&1)"
+          [[ "$details" == *"Authority=Developer ID Application:"* ]]
+          [[ "$details" == *"runtime"* ]]
+          [[ "$details" == *"Timestamp="* ]]
+
+      - name: Create DMG
+        shell: zsh {0}
+        run: |
+          set -euo pipefail
+          name="ProfileBar-${VERSION}-macos-arm64.dmg"
+          ./package-dmg.sh build/ProfileBar.app "dist/$name"
+          print "RELEASE_NAME=$name" >> "$GITHUB_ENV"
+
+      - name: Notarize
+        shell: zsh {0}
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+        run: |
+          set -euo pipefail
+          result="$RUNNER_TEMP/notarization.plist"
+          log="$RUNNER_TEMP/notarization.json"
+
+          xcrun notarytool submit "dist/$RELEASE_NAME" \
+            --apple-id "$APPLE_ID" \
+            --team-id "$APPLE_TEAM_ID" \
+            --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+            --wait \
+            --timeout 150m \
+            --output-format plist > "$result"
+
+          submission_id="$(/usr/libexec/PlistBuddy -c 'Print :id' "$result")"
+          notary_status="$(/usr/libexec/PlistBuddy -c 'Print :status' "$result")"
+          xcrun notarytool log "$submission_id" \
+            --apple-id "$APPLE_ID" \
+            --team-id "$APPLE_TEAM_ID" \
+            --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+            "$log"
+
+          if [[ "$notary_status" != "Accepted" ]]; then
+            plutil -p "$log"
+            exit 1
+          fi
+          if ! jq -e '.issues | length == 0' "$log" >/dev/null; then
+            jq '.issues' "$log"
+            exit 1
+          fi
+
+      - name: Staple and verify
+        shell: zsh {0}
+        run: |
+          set -euo pipefail
+          dmg="dist/$RELEASE_NAME"
+          mount="$RUNNER_TEMP/profilebar-dmg"
+
+          xcrun stapler staple "$dmg"
+          xcrun stapler validate "$dmg"
+
+          mkdir "$mount"
+          hdiutil attach "$dmg" -nobrowse -readonly -mountpoint "$mount"
+          cleanup() {
+            hdiutil detach "$mount" >/dev/null
+          }
+          trap cleanup EXIT
+          [[ "$(readlink "$mount/Applications")" == "/Applications" ]]
+          codesign --verify --deep --strict --verbose=2 "$mount/ProfileBar.app"
+          spctl --assess --type execute --verbose=4 "$mount/ProfileBar.app"
+          cleanup
+          trap - EXIT
+
+          (cd dist && shasum -a 256 "$RELEASE_NAME" > "$RELEASE_NAME.sha256")
+
+      - name: Publish GitHub release
+        shell: zsh {0}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create "$GITHUB_REF_NAME" \
+            "dist/$RELEASE_NAME" \
+            "dist/$RELEASE_NAME.sha256" \
+            --verify-tag \
+            --generate-notes \
+            --title "ProfileBar $VERSION"
