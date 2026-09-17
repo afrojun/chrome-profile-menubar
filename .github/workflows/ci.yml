@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: macos-26
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Check scripts and property list
+        shell: zsh {0}
+        run: |
+          set -euo pipefail
+          zsh -n build.sh package-dmg.sh run.sh setup-signing.sh test.sh
+          plutil -lint Info.plist
+
+      - name: Test
+        run: ./test.sh
+
+      - name: Build and verify
+        shell: zsh {0}
+        env:
+          PROFILEBAR_SIGNING_IDENTITY: "-"
+        run: |
+          set -euo pipefail
+          ./build.sh
+          codesign --verify --deep --strict --verbose=2 build/ProfileBar.app
+
+          executable="build/ProfileBar.app/Contents/MacOS/ProfileBar"
+          minimum_macos_version="$(/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' Info.plist)"
+          build_info="$(vtool -show-build "$executable")"
+          [[ "$build_info" == *"minos $minimum_macos_version"* ]]
+          file "$executable" | grep -F "arm64"
+
+      - name: Package and inspect DMG
+        shell: zsh {0}
+        run: |
+          set -euo pipefail
+          dmg="$RUNNER_TEMP/ProfileBar-ci.dmg"
+          mount="$RUNNER_TEMP/ProfileBar-mount"
+          ./package-dmg.sh build/ProfileBar.app "$dmg"
+
+          mkdir "$mount"
+          hdiutil attach "$dmg" -nobrowse -readonly -mountpoint "$mount"
+          cleanup() {
+            hdiutil detach "$mount" >/dev/null
+          }
+          trap cleanup EXIT
+          [[ "$(readlink "$mount/Applications")" == "/Applications" ]]
+          codesign --verify --deep --strict --verbose=2 "$mount/ProfileBar.app"
