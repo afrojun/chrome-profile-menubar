@@ -40,8 +40,16 @@ jobs:
           PROFILEBAR_SIGNING_IDENTITY: "-"
         run: |
           set -euo pipefail
-          ./build.sh
+          ./build.sh --dev
+          dev_app="build/ProfileBar Dev.app"
+          [[ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleDisplayName' "$dev_app/Contents/Info.plist")" == "ProfileBar Dev" ]]
+          [[ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$dev_app/Contents/Info.plist")" == "dev.afrojun.ProfileBar.dev" ]]
+          codesign --verify --deep --strict --verbose=2 "$dev_app"
+
+          ./build.sh --release
           codesign --verify --deep --strict --verbose=2 build/ProfileBar.app
+          [[ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleDisplayName' build/ProfileBar.app/Contents/Info.plist)" == "ProfileBar" ]]
+          [[ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' build/ProfileBar.app/Contents/Info.plist)" == "dev.afrojun.ProfileBar" ]]
 
           executable="build/ProfileBar.app/Contents/MacOS/ProfileBar"
           minimum_macos_version="$(/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' Info.plist)"
