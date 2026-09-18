@@ -76,6 +76,7 @@ swiftc -target "arm64-apple-macos${minimum_macos_version}" -O -warnings-as-error
   "$project_dir/Sources/ProfileBar/ProfileShortcut.swift" \
   "$project_dir/Sources/ProfileBar/ShortcutRecorderButton.swift" \
   "$project_dir/Sources/ProfileBar/SettingsWindowController.swift" \
+  "$project_dir/Sources/ProfileBar/UpdateChecker.swift" \
   "$project_dir/Sources/ProfileBar/main.swift" \
   -o "$contents_dir/MacOS/ProfileBar"
 

@@ -158,6 +158,37 @@ struct ProfileBarTests {
         expect(symbol.size == NSSize(width: 18, height: 18), "menu-bar symbol should use the native status-item size")
         expect(symbol.isTemplate, "menu-bar symbol should adapt to the menu-bar appearance")
         expect(symbol.tiffRepresentation != nil, "menu-bar symbol should render")
+
+        expect(AppVersion("v1.10.0")! > AppVersion("1.9.9")!, "version comparison should use numeric parts")
+        expect(AppVersion("1.0")! == AppVersion("1.0.0")!, "missing version parts should equal zero")
+        expect(AppVersion("1.0-beta") == nil, "non-numeric release versions should be rejected")
+        expect(AppVersion("1.-1.0") == nil, "negative release versions should be rejected")
+
+        let now = Date(timeIntervalSinceReferenceDate: 1_000_000)
+        expect(
+            UpdateCheckPolicy.delay(lastCheck: nil, now: now) == 10,
+            "the first update check should wait briefly after launch"
+        )
+        expect(
+            UpdateCheckPolicy.delay(lastCheck: now.addingTimeInterval(-25 * 60 * 60), now: now) == 10,
+            "an overdue update check should wait briefly after launch"
+        )
+        expect(
+            UpdateCheckPolicy.delay(lastCheck: now.addingTimeInterval(-23 * 60 * 60), now: now) == 60 * 60,
+            "a recent update check should wait until the next day"
+        )
+        expect(
+            UpdateCheckPolicy.delay(lastCheck: now.addingTimeInterval(60 * 60), now: now) == 24 * 60 * 60,
+            "a future check date should not postpone updates for more than a day"
+        )
+
+        let release = try! JSONDecoder().decode(
+            GitHubRelease.self,
+            from: Data(
+                #"{"tag_name":"v1.1.0","html_url":"https://github.com/afrojun/profilebar/releases/tag/v1.1.0"}"#.utf8)
+        )
+        expect(release.tagName == "v1.1.0", "the GitHub release tag should decode")
+        expect(release.pageURL.host == "github.com", "the GitHub release page should decode")
         print("PASS: ProfileBar tests")
     }
 }

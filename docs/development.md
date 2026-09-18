@@ -69,7 +69,7 @@ Pushing a version tag runs [the release workflow](../.github/workflows/release.y
 
 The reasons for using direct GitHub distribution are recorded in the [distribution decision](distribution-decision.md).
 
-The tag must match `CFBundleShortVersionString` in `Info.plist`. Version `1.0.0`, for example, uses tag `v1.0.0`.
+The tag must match `CFBundleShortVersionString` in `Info.plist`. Version `1.1.0`, for example, uses tag `v1.1.0`.
 
 ### Set up GitHub secrets
 
@@ -107,8 +107,8 @@ From a committed `main` branch:
 Then create and push the version tag:
 
 ```zsh
-git tag -a v1.0.0 -m "ProfileBar 1.0.0"
-git push origin v1.0.0
+git tag -a v1.1.0 -m "ProfileBar 1.1.0"
+git push origin v1.1.0
 ```
 
 The workflow allows three hours for the job and up to 150 minutes for Apple's notarization service. It publishes nothing until notarization and verification succeed.

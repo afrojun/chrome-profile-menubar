@@ -25,6 +25,7 @@ ProfileBar is a native macOS menu-bar app. One action must switch to an open Chr
 - `GlobalHotKeyRegistrar.swift` owns Carbon hotkey registration and dispatch only.
 - `ShortcutRecorderButton.swift` owns shortcut capture and recording feedback.
 - `SettingsWindowController.swift` owns the native settings window and rows.
+- `UpdateChecker.swift` owns release lookup, check timing, version comparison, and update prompts.
 - `ProfileAvatarRenderer.swift` owns avatar and monogram rendering.
 - `main.swift` coordinates the app. Keep policy here and mechanics in the focused types above.
 
@@ -60,6 +61,7 @@ Before finishing non-trivial code, read the diff as a new reviewer. The main flo
 - Keep signing keys in Keychain. `setup-signing.sh` may make a local identity, but key material never belongs in the repository.
 - Do not use private SkyLight or CGS APIs. They are fragile and block standard distribution.
 - Do not bypass macOS privacy controls. The user must grant Accessibility access in System Settings.
+- Update checks may read GitHub's public latest-release endpoint. Never include profile or browser data in the request.
 - Preserve unrelated working-tree changes. Do not use destructive Git or filesystem commands to clean up user-owned work.
 
 ## UI conventions

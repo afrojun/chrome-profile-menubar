@@ -11,6 +11,7 @@ swiftc -warnings-as-errors \
   "$project_dir/Sources/ProfileBar/ChromeWindowTitleMatcher.swift" \
   "$project_dir/Sources/ProfileBar/ProfileBarSymbol.swift" \
   "$project_dir/Sources/ProfileBar/ProfileShortcut.swift" \
+  "$project_dir/Sources/ProfileBar/UpdateChecker.swift" \
   "$project_dir/Tests/ProfileBarTests.swift" \
   -o "$test_binary"
 "$test_binary"
