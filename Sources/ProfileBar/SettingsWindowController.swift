@@ -40,6 +40,7 @@ struct SettingsActions {
 
 @MainActor
 final class SettingsWindowController: NSWindowController {
+    private static let websiteURL = URL(string: "https://afrojun.dev/profilebar/")!
     private static let repositoryURL = URL(string: "https://github.com/afrojun/profilebar")!
     private static let helpURL = repositoryURL.appending(path: "issues/new/choose")
 
@@ -209,8 +210,8 @@ final class SettingsWindowController: NSWindowController {
     }
 
     @objc private func showAbout() {
-        let credits = NSMutableAttributedString(string: "View on GitHub")
-        credits.addAttribute(.link, value: Self.repositoryURL, range: NSRange(location: 0, length: credits.length))
+        let credits = NSMutableAttributedString(string: "ProfileBar website")
+        credits.addAttribute(.link, value: Self.websiteURL, range: NSRange(location: 0, length: credits.length))
         NSApp.orderFrontStandardAboutPanel(options: [.credits: credits])
     }
 

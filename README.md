@@ -7,6 +7,11 @@
 <p align="center">Jump straight to the Chrome profile you want.</p>
 
 <p align="center">
+  <a href="https://afrojun.dev/profilebar/">Website</a> ·
+  <a href="https://github.com/afrojun/profilebar/releases/latest">Download</a>
+</p>
+
+<p align="center">
   <img src="docs/images/menu-bar.png" width="304" alt="Three Chrome profile buttons and the ProfileBar button in the macOS menu bar">
 </p>
 
