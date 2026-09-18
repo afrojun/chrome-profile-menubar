@@ -62,7 +62,7 @@ jobs:
         shell: zsh {0}
         run: |
           set -euo pipefail
-          ./build.sh
+          ./build.sh --release
           codesign --verify --deep --strict --verbose=2 build/ProfileBar.app
           details="$(codesign -d --verbose=4 build/ProfileBar.app 2>&1)"
           minimum_macos_version="$(/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' Info.plist)"

@@ -54,7 +54,7 @@ final class SettingsWindowController: NSWindowController {
             backing: .buffered,
             defer: false
         )
-        window.title = "ProfileBar"
+        window.title = Self.appName
         window.isReleasedWhenClosed = false
         window.minSize = NSSize(width: 500, height: 320)
         super.init(window: window)
@@ -189,7 +189,7 @@ final class SettingsWindowController: NSWindowController {
     }
 
     private func makeFooter() -> NSView {
-        let version = NSTextField(labelWithString: "ProfileBar \(Self.version)")
+        let version = NSTextField(labelWithString: "\(Self.appName) \(Self.version)")
         version.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
         version.textColor = .secondaryLabelColor
         version.isSelectable = true
@@ -245,6 +245,10 @@ final class SettingsWindowController: NSWindowController {
 
     private static var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "Unknown"
+    }
+
+    private static var appName: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "ProfileBar"
     }
 
     private static func settingRow(title: String, detail: NSTextField, controls: [NSView]) -> NSView {

@@ -11,6 +11,12 @@ if [[ ! -d "$app" ]]; then
   exit 1
 fi
 
+bundle_id="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Contents/Info.plist" 2>/dev/null || true)"
+if [[ "$bundle_id" != "dev.afrojun.ProfileBar" ]]; then
+  print -u2 "A DMG can only be made from the release app."
+  exit 1
+fi
+
 work="$(mktemp -d /private/tmp/profilebar-dmg.XXXXXX)"
 contents="$work/contents"
 mount="$work/mount"

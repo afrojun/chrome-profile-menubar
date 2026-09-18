@@ -17,7 +17,9 @@ The first switch explains why Accessibility access is needed and links to **Syst
 ./build.sh
 ```
 
-The app is written to `build/ProfileBar.app`. The build uses an installed `Developer ID Application` certificate when available, then falls back to the local `ProfileBar Local Signing` identity. Without either identity, it uses an ad-hoc signature, which may cause macOS to ask for Accessibility permission after each rebuild.
+The default development build is written to `build/ProfileBar Dev.app`. It has its own bundle ID, preferences, Accessibility permission, and login item, so it can coexist with the released app in `/Applications`. Quit the released app before running the development build to avoid duplicate menu-bar items and shortcut conflicts.
+
+Development builds use the local `ProfileBar Local Signing` identity when available. Without it, the build uses an ad-hoc signature, which may cause macOS to ask for Accessibility permission after each rebuild.
 
 GitHub Actions runs the same formatting, test, build, deployment-target, signature, and DMG checks for pull requests and pushes to `main`.
 
@@ -30,7 +32,7 @@ xcrun swift-format format --in-place --configuration .swift-format --recursive S
 To inspect the permission without opening the app UI:
 
 ```zsh
-./build/ProfileBar.app/Contents/MacOS/ProfileBar --check-accessibility
+./build/ProfileBar\ Dev.app/Contents/MacOS/ProfileBar --check-accessibility
 ```
 
 ## Keep Accessibility permission across local builds
@@ -50,6 +52,16 @@ To choose another identity, set `PROFILEBAR_SIGNING_IDENTITY` to the full name s
 ```zsh
 security find-identity -v -p codesigning
 ```
+
+## Build the release app
+
+Use the release variant only when testing or publishing the production app:
+
+```zsh
+./build.sh --release
+```
+
+It writes `build/ProfileBar.app`, keeps the canonical `dev.afrojun.ProfileBar` bundle ID from `Info.plist`, and requires a `Developer ID Application` certificate. Setting `PROFILEBAR_SIGNING_IDENTITY=-` produces the ad-hoc release build used by CI, but that build cannot be distributed. The DMG packager rejects the development bundle ID.
 
 ## Publish a release
 
@@ -90,7 +102,7 @@ From a committed `main` branch:
 3. Confirm selecting a closed profile opens it without copying the current URL.
 4. Confirm each assigned shortcut performs the same switch-or-open action.
 5. Confirm Settings reuses one window and **Start at login** reports its state correctly.
-6. Run the automated checks with `./test.sh` and `./build.sh`.
+6. Run the automated checks with `./test.sh` and `./build.sh --release`.
 
 Then create and push the version tag:
 

@@ -2,7 +2,29 @@
 set -euo pipefail
 
 project_dir="${0:A:h}"
-app_dir="$project_dir/build/ProfileBar.app"
+variant="${1:-}"
+if (( $# > 1 )); then
+  print -u2 "Usage: $0 [--dev | --release]"
+  exit 2
+fi
+
+case "$variant" in
+  "" | --dev)
+    variant=dev
+    app_name="ProfileBar Dev"
+    dev_bundle_id="dev.afrojun.ProfileBar.dev"
+    ;;
+  --release)
+    variant=release
+    app_name="ProfileBar"
+    ;;
+  *)
+    print -u2 "Usage: $0 [--dev | --release]"
+    exit 2
+    ;;
+esac
+
+app_dir="$project_dir/build/$app_name.app"
 contents_dir="$app_dir/Contents"
 local_identity="ProfileBar Local Signing"
 minimum_macos_version="$(/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' "$project_dir/Info.plist")"
@@ -15,16 +37,31 @@ developer_id_identity="$(
 
 if [[ -n "${PROFILEBAR_SIGNING_IDENTITY:-}" ]]; then
   signing_identity="$PROFILEBAR_SIGNING_IDENTITY"
-elif [[ -n "$developer_id_identity" ]]; then
-  signing_identity="$developer_id_identity"
-elif [[ "$signing_identities" == *"\"$local_identity\""* ]]; then
+elif [[ "$variant" == dev && "$signing_identities" == *"\"$local_identity\""* ]]; then
   signing_identity="$local_identity"
+elif [[ "$variant" == release && -n "$developer_id_identity" ]]; then
+  signing_identity="$developer_id_identity"
+elif [[ "$variant" == release ]]; then
+  print -u2 "A Developer ID Application certificate is required for a release build."
+  print -u2 "Set PROFILEBAR_SIGNING_IDENTITY=- only for an ad-hoc CI check."
+  exit 1
 else
   signing_identity="-"
 fi
 
+if [[ "$variant" == release \
+  && "$signing_identity" != "-" \
+  && "$signing_identity" != "Developer ID Application:"* ]]; then
+  print -u2 "A release build must use a Developer ID Application certificate."
+  exit 1
+fi
+
 if [[ "$signing_identity" == "-" ]]; then
-  print -u2 "Warning: signing ad hoc; installing this build may reset Accessibility access."
+  if [[ "$variant" == dev ]]; then
+    print -u2 "Warning: signing ad hoc; run ./setup-signing.sh to keep Accessibility access across builds."
+  else
+    print -u2 "Warning: the release build is signed ad hoc and cannot be distributed."
+  fi
 fi
 
 rm -rf -- "$app_dir"
@@ -43,6 +80,11 @@ swiftc -target "arm64-apple-macos${minimum_macos_version}" -O -warnings-as-error
   -o "$contents_dir/MacOS/ProfileBar"
 
 cp "$project_dir/Info.plist" "$contents_dir/Info.plist"
+if [[ "$variant" == dev ]]; then
+  /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName $app_name" "$contents_dir/Info.plist"
+  /usr/libexec/PlistBuddy -c "Set :CFBundleName $app_name" "$contents_dir/Info.plist"
+  /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier $dev_bundle_id" "$contents_dir/Info.plist"
+fi
 cp "$project_dir/Resources/AppIcon.icns" "$contents_dir/Resources/AppIcon.icns"
 signing_options=(--force --sign "$signing_identity")
 if [[ "$signing_identity" == "Developer ID Application:"* ]]; then

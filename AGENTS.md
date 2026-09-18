@@ -81,13 +81,15 @@ Run the unit suite:
 Build and sign the app:
 
 ```zsh
-./build.sh
+./build.sh --dev
 ```
+
+The development app is `build/ProfileBar Dev.app` with bundle ID `dev.afrojun.ProfileBar.dev`. Use `./build.sh --release` only for the production `build/ProfileBar.app` with bundle ID `dev.afrojun.ProfileBar`.
 
 Before handing back a change:
 
 1. Run `./test.sh`.
-2. Run `./build.sh` with warnings treated as errors.
+2. Run `./build.sh --dev` and `./build.sh --release` with warnings treated as errors.
 3. Verify the built signature with `codesign --verify --deep --strict`.
 4. Run `git diff --check`.
 5. Check the diff for credentials, personal data, user paths, and generated files.
