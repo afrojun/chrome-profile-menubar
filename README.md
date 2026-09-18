@@ -30,6 +30,12 @@ Open **Settings…** from the ProfileBar button to:
 
 Profile shortcuts work from any app. ProfileBar only registers the combinations you assign; it does not monitor what you type.
 
+## Updates
+
+Choose **Check for Updates…** from the ProfileBar menu at any time. ProfileBar also checks about 10 seconds after launch when it has not checked successfully in the last 24 hours, then once per day while it remains open. Automatic checks stay quiet unless a new version is available.
+
+The check reads the latest public release from GitHub and identifies the installed ProfileBar version in its request. It does not send profile names, browser activity, or other app data. Installing an update still uses the signed DMG from [GitHub Releases](https://github.com/afrojun/profilebar/releases).
+
 ## Install
 
 1. Download the latest `.dmg` from [GitHub Releases](https://github.com/afrojun/profilebar/releases).

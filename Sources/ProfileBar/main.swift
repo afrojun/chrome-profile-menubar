@@ -12,6 +12,7 @@ final class ProfileBarAppDelegate: NSObject, NSApplicationDelegate, NSMenuDelega
     private lazy var hotKeyRegistrar = GlobalHotKeyRegistrar { [weak self] profile in
         self?.activate(profile)
     }
+    private let updateChecker = UpdateChecker()
     private var settingsWindow: SettingsWindowController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -25,6 +26,7 @@ final class ProfileBarAppDelegate: NSObject, NSApplicationDelegate, NSMenuDelega
         utilityItem.menu = menu
         reloadProfiles(rebuild: true)
         fillUtilityMenu(menu)
+        updateChecker.start()
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
@@ -113,6 +115,11 @@ final class ProfileBarAppDelegate: NSObject, NSApplicationDelegate, NSMenuDelega
         refresh.target = self
         menu.addItem(refresh)
 
+        let updates = NSMenuItem(title: "Check for Updates…", action: #selector(checkForUpdates), keyEquivalent: "")
+        updates.target = self
+        updates.isEnabled = !updateChecker.isChecking
+        menu.addItem(updates)
+
         menu.addItem(.separator())
         let quit = NSMenuItem(
             title: "Quit ProfileBar", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
@@ -130,6 +137,10 @@ final class ProfileBarAppDelegate: NSObject, NSApplicationDelegate, NSMenuDelega
     @objc private func refreshProfiles() {
         reloadProfiles(rebuild: true)
         if let menu = utilityItem.menu { fillUtilityMenu(menu) }
+    }
+
+    @objc private func checkForUpdates() {
+        updateChecker.checkNow()
     }
 
     @objc private func openSettings() {
